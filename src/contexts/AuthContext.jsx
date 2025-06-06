@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
 
 const AuthContext = createContext();
 
@@ -12,116 +13,160 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [loading, setLoading] = useState(true);
 
+  const API_BASE = 'https://your-render-backend.onrender.com/api';
+
+  // Configure axios defaults
   useEffect(() => {
-    // Check for stored authentication token
-    const token = localStorage.getItem('authToken');
-    const userData = localStorage.getItem('userData');
-    
-    if (token && userData) {
-      try {
-        const parsedUser = JSON.parse(userData);
-        setUser(parsedUser);
-        setIsAuthenticated(true);
-      } catch (error) {
-        console.error('Error parsing stored user data:', error);
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('userData');
-      }
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    } else {
+      delete axios.defaults.headers.common['Authorization'];
     }
-    
-    setIsLoading(false);
-  }, []);
+  }, [token]);
+
+  // Check if user is authenticated on app load
+  useEffect(() => {
+    const checkAuth = async () => {
+      if (token) {
+        try {
+          const response = await axios.get(`${API_BASE}/auth/me`);
+          setUser(response.data.user);
+        } catch (error) {
+          console.error('Auth check failed:', error);
+          logout();
+        }
+      }
+      setLoading(false);
+    };
+
+    checkAuth();
+  }, [token]);
 
   const login = async (email, password) => {
-    setIsLoading(true);
     try {
-      // Simulate API call
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
+      const response = await axios.post(`${API_BASE}/auth/login`, {
+        email,
+        password
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        const { token, user: userData } = data;
-        
-        localStorage.setItem('authToken', token);
-        localStorage.setItem('userData', JSON.stringify(userData));
-        
-        setUser(userData);
-        setIsAuthenticated(true);
-        return { success: true };
-      } else {
-        const error = await response.json();
-        return { success: false, error: error.message };
-      }
+      
+      const { access_token, user } = response.data;
+      setToken(access_token);
+      setUser(user);
+      localStorage.setItem('token', access_token);
+      
+      return { success: true, user };
     } catch (error) {
-      console.error('Login error:', error);
-      return { success: false, error: 'Network error. Please try again.' };
-    } finally {
-      setIsLoading(false);
+      return { 
+        success: false, 
+        error: error.response?.data?.error || 'Login failed' 
+      };
     }
   };
 
-  const register = async (userData) => {
-    setIsLoading(true);
+  const register = async (name, email, password) => {
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
+      const response = await axios.post(`${API_BASE}/auth/register`, {
+        name,
+        email,
+        password
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        const { token, user: newUser } = data;
-        
-        localStorage.setItem('authToken', token);
-        localStorage.setItem('userData', JSON.stringify(newUser));
-        
-        setUser(newUser);
-        setIsAuthenticated(true);
-        return { success: true };
-      } else {
-        const error = await response.json();
-        return { success: false, error: error.message };
-      }
+      
+      const { access_token, user } = response.data;
+      setToken(access_token);
+      setUser(user);
+      localStorage.setItem('token', access_token);
+      
+      return { success: true, user };
     } catch (error) {
-      console.error('Registration error:', error);
-      return { success: false, error: 'Network error. Please try again.' };
-    } finally {
-      setIsLoading(false);
+      return { 
+        success: false, 
+        error: error.response?.data?.error || 'Registration failed' 
+      };
+    }
+  };
+
+  const googleLogin = async (googleToken) => {
+    try {
+      const response = await axios.post(`${API_BASE}/auth/google`, {
+        token: googleToken
+      });
+      
+      const { access_token, user } = response.data;
+      setToken(access_token);
+      setUser(user);
+      localStorage.setItem('token', access_token);
+      
+      return { success: true, user };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error.response?.data?.error || 'Google login failed' 
+      };
+    }
+  };
+
+  const forgotPassword = async (email) => {
+    try {
+      await axios.post(`${API_BASE}/auth/forgot-password`, { email });
+      return { success: true };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error.response?.data?.error || 'Password reset failed' 
+      };
+    }
+  };
+
+  const resetPassword = async (token, password) => {
+    try {
+      await axios.post(`${API_BASE}/auth/reset-password`, {
+        token,
+        password
+      });
+      return { success: true };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error.response?.data?.error || 'Password reset failed' 
+      };
     }
   };
 
   const logout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userData');
+    setToken(null);
     setUser(null);
-    setIsAuthenticated(false);
+    localStorage.removeItem('token');
+    delete axios.defaults.headers.common['Authorization'];
   };
 
-  const updateUser = (updatedUser) => {
-    setUser(updatedUser);
-    localStorage.setItem('userData', JSON.stringify(updatedUser));
+  const updateProfile = async (profileData) => {
+    try {
+      const response = await axios.put(`${API_BASE}/user/profile`, profileData);
+      setUser(response.data.user);
+      return { success: true, user: response.data.user };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error.response?.data?.error || 'Profile update failed' 
+      };
+    }
   };
 
   const value = {
     user,
-    isAuthenticated,
-    isLoading,
+    token,
+    loading,
     login,
     register,
+    googleLogin,
+    forgotPassword,
+    resetPassword,
     logout,
-    updateUser,
+    updateProfile,
+    isAuthenticated: !!user
   };
 
   return (
@@ -130,4 +175,3 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-
