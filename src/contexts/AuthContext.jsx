@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
 
 const AuthContext = createContext();
 
@@ -16,24 +15,48 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
 
+  // Update this to your backend URL when you deploy the backend
   const API_BASE = 'https://your-render-backend.onrender.com/api';
 
-  // Configure axios defaults
-  useEffect(() => {
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    } else {
-      delete axios.defaults.headers.common['Authorization'];
+  // Helper function for API calls using fetch (no axios needed)
+  const apiCall = async (endpoint, options = {}) => {
+    const url = `${API_BASE}${endpoint}`;
+    const config = {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
+        ...options.headers,
+      },
+      ...options,
+    };
+
+    if (config.body && typeof config.body === 'object') {
+      config.body = JSON.stringify(config.body);
     }
-  }, [token]);
+
+    try {
+      const response = await fetch(url, config);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('API call failed:', error);
+      throw error;
+    }
+  };
 
   // Check if user is authenticated on app load
   useEffect(() => {
     const checkAuth = async () => {
       if (token) {
         try {
-          const response = await axios.get(`${API_BASE}/auth/me`);
-          setUser(response.data.user);
+          const data = await apiCall('/auth/me');
+          setUser(data.user);
         } catch (error) {
           console.error('Auth check failed:', error);
           logout();
@@ -47,12 +70,12 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await axios.post(`${API_BASE}/auth/login`, {
-        email,
-        password
+      const data = await apiCall('/auth/login', {
+        method: 'POST',
+        body: { email, password }
       });
       
-      const { access_token, user } = response.data;
+      const { access_token, user } = data;
       setToken(access_token);
       setUser(user);
       localStorage.setItem('token', access_token);
@@ -61,20 +84,19 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       return { 
         success: false, 
-        error: error.response?.data?.error || 'Login failed' 
+        error: error.message || 'Login failed' 
       };
     }
   };
 
   const register = async (name, email, password) => {
     try {
-      const response = await axios.post(`${API_BASE}/auth/register`, {
-        name,
-        email,
-        password
+      const data = await apiCall('/auth/register', {
+        method: 'POST',
+        body: { name, email, password }
       });
       
-      const { access_token, user } = response.data;
+      const { access_token, user } = data;
       setToken(access_token);
       setUser(user);
       localStorage.setItem('token', access_token);
@@ -83,18 +105,19 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       return { 
         success: false, 
-        error: error.response?.data?.error || 'Registration failed' 
+        error: error.message || 'Registration failed' 
       };
     }
   };
 
   const googleLogin = async (googleToken) => {
     try {
-      const response = await axios.post(`${API_BASE}/auth/google`, {
-        token: googleToken
+      const data = await apiCall('/auth/google', {
+        method: 'POST',
+        body: { token: googleToken }
       });
       
-      const { access_token, user } = response.data;
+      const { access_token, user } = data;
       setToken(access_token);
       setUser(user);
       localStorage.setItem('token', access_token);
@@ -103,34 +126,37 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       return { 
         success: false, 
-        error: error.response?.data?.error || 'Google login failed' 
+        error: error.message || 'Google login failed' 
       };
     }
   };
 
   const forgotPassword = async (email) => {
     try {
-      await axios.post(`${API_BASE}/auth/forgot-password`, { email });
+      await apiCall('/auth/forgot-password', {
+        method: 'POST',
+        body: { email }
+      });
       return { success: true };
     } catch (error) {
       return { 
         success: false, 
-        error: error.response?.data?.error || 'Password reset failed' 
+        error: error.message || 'Password reset failed' 
       };
     }
   };
 
   const resetPassword = async (token, password) => {
     try {
-      await axios.post(`${API_BASE}/auth/reset-password`, {
-        token,
-        password
+      await apiCall('/auth/reset-password', {
+        method: 'POST',
+        body: { token, password }
       });
       return { success: true };
     } catch (error) {
       return { 
         success: false, 
-        error: error.response?.data?.error || 'Password reset failed' 
+        error: error.message || 'Password reset failed' 
       };
     }
   };
@@ -139,18 +165,47 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
     setUser(null);
     localStorage.removeItem('token');
-    delete axios.defaults.headers.common['Authorization'];
   };
 
   const updateProfile = async (profileData) => {
     try {
-      const response = await axios.put(`${API_BASE}/user/profile`, profileData);
-      setUser(response.data.user);
-      return { success: true, user: response.data.user };
+      const data = await apiCall('/user/profile', {
+        method: 'PUT',
+        body: profileData
+      });
+      setUser(data.user);
+      return { success: true, user: data.user };
     } catch (error) {
       return { 
         success: false, 
-        error: error.response?.data?.error || 'Profile update failed' 
+        error: error.message || 'Profile update failed' 
+      };
+    }
+  };
+
+  const placeBet = async (betData) => {
+    try {
+      const data = await apiCall('/bets', {
+        method: 'POST',
+        body: betData
+      });
+      return { success: true, bet: data.bet };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error.message || 'Bet placement failed' 
+      };
+    }
+  };
+
+  const getUserBets = async () => {
+    try {
+      const data = await apiCall('/bets');
+      return { success: true, bets: data.bets };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error.message || 'Failed to fetch bets' 
       };
     }
   };
@@ -166,6 +221,8 @@ export const AuthProvider = ({ children }) => {
     resetPassword,
     logout,
     updateProfile,
+    placeBet,
+    getUserBets,
     isAuthenticated: !!user
   };
 
@@ -175,3 +232,4 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
