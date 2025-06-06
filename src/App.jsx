@@ -235,279 +235,152 @@ function App() {
   const currentEvent = sportsEvents[currentEventIndex];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="App">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <img 
-                src="/playchacha_logo.png" 
-                alt="PlayChaCha" 
-                className="h-10 w-10 mr-3"
-              />
-              <h1 className="text-2xl font-bold text-blue-800">PlayChaCha</h1>
-            </div>
-            <nav className="hidden md:flex space-x-8">
-              <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors">{t('sports')}</a>
-              <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors">{t('live')}</a>
-              <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors">{t('myBets')}</a>
-            </nav>
-            <div className="flex items-center space-x-4">
-              <select 
-                value={currentLanguage} 
-                onChange={(e) => setCurrentLanguage(e.target.value)}
-                className="bg-gray-100 border border-gray-300 rounded px-3 py-1 text-sm"
-              >
-                <option value="en">🇺🇸 EN</option>
-                <option value="es">🇪🇸 ES</option>
-                <option value="fr">🇫🇷 FR</option>
-                <option value="de">🇩🇪 DE</option>
-                <option value="pt">🇧🇷 PT</option>
-              </select>
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                {t('login')}
-              </button>
-            </div>
-          </div>
+      <header className="header">
+        <div className="header-container">
+          <div className="logo">PlayChaCha</div>
+          <nav className="nav-links">
+            <a href="#" className="nav-link active">{t('sports')}</a>
+            <a href="#" className="nav-link">{t('live')}</a>
+            <a href="#" className="nav-link">{t('myBets')}</a>
+            <select 
+              value={currentLanguage} 
+              onChange={(e) => setCurrentLanguage(e.target.value)}
+              className="language-selector"
+            >
+              <option value="en">🇺🇸 EN</option>
+              <option value="es">🇪🇸 ES</option>
+              <option value="fr">🇫🇷 FR</option>
+              <option value="de">🇩🇪 DE</option>
+              <option value="pt">🇧🇷 PT</option>
+            </select>
+            <button className="login-btn">{t('login')}</button>
+          </nav>
         </div>
       </header>
 
-      {/* Hero Section with Live Sports Events */}
-      <section className="relative bg-gradient-to-br from-blue-800 via-blue-900 to-purple-900 text-white overflow-hidden">
-        {/* Animated Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 animate-pulse" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-          }}></div>
-        </div>
-
-        {/* Floating Sports Icons */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-20 left-10 text-4xl animate-bounce" style={{animationDelay: '0s'}}>🏈</div>
-          <div className="absolute top-32 right-20 text-3xl animate-bounce" style={{animationDelay: '1s'}}>⚽</div>
-          <div className="absolute bottom-40 left-20 text-3xl animate-bounce" style={{animationDelay: '2s'}}>🏀</div>
-          <div className="absolute bottom-20 right-10 text-4xl animate-bounce" style={{animationDelay: '0.5s'}}>🎾</div>
-          <div className="absolute top-40 left-1/3 text-2xl animate-bounce" style={{animationDelay: '1.5s'}}>🏒</div>
-          <div className="absolute bottom-60 right-1/3 text-3xl animate-bounce" style={{animationDelay: '2.5s'}}>🏐</div>
+      <main className="main-content">
+        {/* Hero Section */}
+        <section className="hero-section">
+          <h1 className="hero-title">
+            {t('title')} <span>{t('subtitle')}</span>
+          </h1>
+          <p className="hero-subtitle">{t('description')}</p>
+          
+          <div className="sports-icons">
+            <div className="sport-icon">🏈</div>
+            <div className="sport-icon">⚽</div>
+            <div className="sport-icon">🏀</div>
+            <div className="sport-icon">🎾</div>
+            <div className="sport-icon">🏒</div>
+          </div>
+          
+          <div className="action-buttons">
+            <button className="btn btn-primary">{t('startBetting')}</button>
+            <button className="btn btn-secondary">{t('watchDemo')}</button>
+          </div>
+        </section>
+        
+        {/* Live Events Section */}
+        <section className="live-events">
+          <h2 className="section-title">
+            <span className="live-indicator"></span> {t('liveEvents')}
+          </h2>
+          
+          {sportsEvents.map((event) => (
+            <div key={event.id} className="event-card">
+              <div className="event-header">
+                <span className="event-league">{event.icon} {event.league}</span>
+                <span className="event-time">{event.status}</span>
+              </div>
+              <div className="event-teams">{event.teams[0]} vs {event.teams[1]}</div>
+              <div className="event-score">
+                {event.sport === 'Tennis' ? event.scores.join(', ') : `${event.scores[0]} - ${event.scores[1]}`}
+              </div>
+              <div className="betting-odds">
+                <div className="odds-button">
+                  <div>{event.teams[0]}</div>
+                  <div className="odds-value">1.85</div>
+                </div>
+                <div className="odds-button">
+                  <div>Draw</div>
+                  <div className="odds-value">3.40</div>
+                </div>
+                <div className="odds-button">
+                  <div>{event.teams[1]}</div>
+                  <div className="odds-value">2.10</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </section>
+        
+        {/* Live Ticker */}
+        <div className="live-ticker">
+          <div className="ticker-content">
+            {sportsEvents.map((event) => (
+              <div key={event.id} className="ticker-item">
+                {event.icon} {event.teams[0]} {event.scores[0]} - {event.scores[1]} {event.teams[1]} • {event.time}
+              </div>
+            ))}
+          </div>
         </div>
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              {t('title')}
-              <span className="block text-orange-400">{t('subtitle')}</span>
-            </h1>
-            <p className="text-xl md:text-2xl mb-8 text-blue-100">
-              {t('description')}
+        {/* Features Section */}
+        <section className="features-section">
+          <h2 className="section-title">{t('whyChoose')}</h2>
+          <div className="features-grid">
+            <div className="feature-card">
+              <div className="feature-icon">🔒</div>
+              <h3>{t('secureEscrow')}</h3>
+              <p>Advanced encryption and secure escrow system protecting all transactions</p>
+            </div>
+            <div className="feature-card">
+              <div className="feature-icon">🌎</div>
+              <h3>{t('globalEvents')}</h3>
+              <p>Access to thousands of sporting events from around the world</p>
+            </div>
+            <div className="feature-card">
+              <div className="feature-icon">⚡</div>
+              <h3>{t('instantPayouts')}</h3>
+              <p>Receive your winnings instantly with our lightning-fast payment system</p>
+            </div>
+          </div>
+        </section>
+        
+        {/* Stats Section */}
+        <section className="stats-section">
+          <div className="stats-grid">
+            <div className="stat-card">
+              <div className="stat-value">1.2M+</div>
+              <div className="stat-label">{t('activeUsers')}</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-value">$50M+</div>
+              <div className="stat-label">{t('bettingVolume')}</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-value">94.7%</div>
+              <div className="stat-label">{t('winRate')}</div>
+            </div>
+          </div>
+        </section>
+      </main>
+      
+      <footer className="footer">
+        <div className="footer-content">
+          <div className="footer-links">
+            <a href="#" className="footer-link">About Us</a>
+            <a href="#" className="footer-link">Terms of Service</a>
+            <a href="#" className="footer-link">Privacy Policy</a>
+            <a href="#" className="footer-link">Contact</a>
+          </div>
+          <div className="footer-bottom">
+            <p>© 2025 PlayChaCha. All rights reserved.</p>
+            <p className="visnec-branding">
+              Powered by <a href="https://visnec.com" className="visnec-link">Visnec</a>
             </p>
-
-            {/* Live Event Ticker */}
-            <div className="mb-8 bg-black bg-opacity-30 backdrop-blur-sm rounded-xl p-6 max-w-2xl mx-auto">
-              <div className="flex items-center justify-center mb-4">
-                <span className="bg-red-500 text-white text-xs px-3 py-1 rounded-full font-semibold animate-pulse mr-3">
-                  {currentEvent.status}
-                </span>
-                <span className="text-2xl mr-2">{currentEvent.icon}</span>
-                <span className="text-lg font-semibold">{currentEvent.league}</span>
-              </div>
-              
-              <div className="flex items-center justify-between mb-2">
-                <div className="text-center flex-1">
-                  <div className="font-bold text-lg">{currentEvent.teams[0]}</div>
-                  <div className="text-3xl font-bold text-orange-400">{currentEvent.scores[0]}</div>
-                </div>
-                <div className="text-gray-300 font-bold text-xl mx-4">VS</div>
-                <div className="text-center flex-1">
-                  <div className="font-bold text-lg">{currentEvent.teams[1]}</div>
-                  <div className="text-3xl font-bold text-orange-400">{currentEvent.scores[1]}</div>
-                </div>
-              </div>
-              
-              <div className="text-center text-sm text-gray-300">
-                {currentEvent.time} • {currentEvent.sport}
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="bg-orange-500 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-orange-600 transition-all transform hover:scale-105 shadow-lg animate-pulse">
-                {t('startBetting')}
-              </button>
-              <button className="border-2 border-white text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-white hover:text-blue-800 transition-all transform hover:scale-105">
-                {t('watchDemo')}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Live Events Scroll */}
-        <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 py-2">
-          <div className="flex animate-scroll">
-            {sportsEvents.map((event, index) => (
-              <div key={event.id} className="flex items-center whitespace-nowrap mx-8">
-                <span className="text-lg mr-2">{event.icon}</span>
-                <span className="font-semibold mr-2">{event.teams[0]} {event.scores[0]}</span>
-                <span className="text-gray-300 mr-2">-</span>
-                <span className="font-semibold mr-4">{event.scores[1]} {event.teams[1]}</span>
-                <span className="text-orange-400 text-sm">{event.time}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            <div className="group hover:transform hover:scale-105 transition-all">
-              <div className="text-3xl font-bold text-blue-600 mb-2">1.2M+</div>
-              <div className="text-gray-600">{t('activeUsers')}</div>
-            </div>
-            <div className="group hover:transform hover:scale-105 transition-all">
-              <div className="text-3xl font-bold text-orange-500 mb-2">$50M+</div>
-              <div className="text-gray-600">{t('bettingVolume')}</div>
-            </div>
-            <div className="group hover:transform hover:scale-105 transition-all">
-              <div className="text-3xl font-bold text-purple-600 mb-2">94.7%</div>
-              <div className="text-gray-600">{t('winRate')}</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-16 bg-gradient-to-br from-gray-50 to-blue-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">{t('whyChoose')}</h2>
-            <p className="text-xl text-gray-600">{t('futureOfBetting')}</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105 border border-blue-100">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                <div className="w-6 h-6 bg-blue-600 rounded"></div>
-              </div>
-              <h3 className="text-xl font-semibold mb-2 text-blue-800">{t('secureEscrow')}</h3>
-              <p className="text-gray-600">Bank-level security with funds held in escrow until bet resolution</p>
-            </div>
-            <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105 border border-orange-100">
-              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
-                <div className="w-6 h-6 bg-orange-500 rounded"></div>
-              </div>
-              <h3 className="text-xl font-semibold mb-2 text-orange-600">{t('globalEvents')}</h3>
-              <p className="text-gray-600">Bet on sports events from around the world, 24/7</p>
-            </div>
-            <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105 border border-purple-100">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-                <div className="w-6 h-6 bg-purple-600 rounded"></div>
-              </div>
-              <h3 className="text-xl font-semibold mb-2 text-purple-600">{t('instantPayouts')}</h3>
-              <p className="text-gray-600">Get your winnings instantly, no waiting periods</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Live Events */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">{t('liveEvents')}</h2>
-            <p className="text-xl text-gray-600">{t('joinPools')}</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sportsEvents.slice(0, 3).map((event, index) => (
-              <div key={event.id} className="bg-white border-2 border-blue-100 rounded-xl p-6 hover:shadow-xl transition-all transform hover:scale-105 hover:border-blue-300">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="bg-red-100 text-red-800 text-xs px-3 py-1 rounded-full font-semibold animate-pulse">
-                    {event.status}
-                  </span>
-                  <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded flex items-center">
-                    <span className="mr-1">{event.icon}</span>
-                    {event.sport}
-                  </span>
-                </div>
-                <div className="mb-4">
-                  <div className="font-semibold text-gray-900">{event.teams[0]} vs {event.teams[1]}</div>
-                  <div className="text-sm text-gray-600">{event.league}</div>
-                </div>
-                <div className="flex justify-between items-center mb-4">
-                  <div className="text-center">
-                    <div className="font-semibold text-gray-800">{event.teams[0]}</div>
-                    <div className="text-blue-600 font-bold text-xl">{event.scores[0]}</div>
-                  </div>
-                  <div className="text-gray-400 font-bold">vs</div>
-                  <div className="text-center">
-                    <div className="font-semibold text-gray-800">{event.teams[1]}</div>
-                    <div className="text-blue-600 font-bold text-xl">{event.scores[1]}</div>
-                  </div>
-                </div>
-                <div className="text-sm text-gray-600 mb-4 bg-gray-50 p-2 rounded">
-                  {event.time} • Pool: ${(Math.random() * 50000 + 10000).toFixed(0)}
-                </div>
-                <button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105 font-semibold">
-                  {t('joinBet')}
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center mb-4">
-                <img 
-                  src="/playchacha_logo.png" 
-                  alt="PlayChaCha" 
-                  className="h-8 w-8 mr-2"
-                />
-                <h3 className="text-xl font-bold">PlayChaCha</h3>
-              </div>
-              <p className="text-gray-300 mb-4">The world's leading peer-to-peer sports betting platform.</p>
-              <div className="text-sm text-gray-400">
-                Powered by <a href="https://visnec.ai" target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:text-orange-300 transition-colors font-semibold">Visnec</a>
-              </div>
-              {userLocation && (
-                <div className="text-xs text-gray-500 mt-2">
-                  📍 Location detected: {userLocation.latitude.toFixed(2)}, {userLocation.longitude.toFixed(2)}
-                </div>
-              )}
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4 text-blue-300">{t('sports')}</h4>
-              <ul className="space-y-2 text-gray-300">
-                <li><a href="#" className="hover:text-white transition-colors">Football</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Basketball</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Soccer</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Tennis</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4 text-orange-300">Company</h4>
-              <ul className="space-y-2 text-gray-300">
-                <li><a href="#" className="hover:text-white transition-colors">About</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Press</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4 text-purple-300">Support</h4>
-              <ul className="space-y-2 text-gray-300">
-                <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Responsible Gaming</a></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2025 PlayChaCha. All rights reserved.</p>
           </div>
         </div>
       </footer>
