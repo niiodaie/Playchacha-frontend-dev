@@ -1,65 +1,101 @@
 import React, { useState, useEffect } from 'react';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import LoginModal from './components/LoginModal';
+import RegisterModal from './components/RegisterModal';
 import './App.css';
 
-function App() {
+// Main App Component with Authentication
+function AppContent() {
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const [userLocation, setUserLocation] = useState(null);
   const [liveEvents, setLiveEvents] = useState([]);
   const [currentEventIndex, setCurrentEventIndex] = useState(0);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [sportsData, setSportsData] = useState([]);
+
+  // Get authentication state
+  const { user, logout, isAuthenticated, loading } = useAuth();
 
   // Sports events data with live updates
-  const sportsEvents = [
+  const defaultSportsEvents = [
     {
       id: 1,
       sport: 'Football',
-      teams: ['Chiefs', 'Bills'],
+      teams: ['Kansas City Chiefs', 'Buffalo Bills'],
       scores: [21, 17],
       time: '3rd Quarter',
       status: 'LIVE',
       league: 'NFL',
-      icon: '🏈'
+      icon: '🏈',
+      odds: { home: 1.85, draw: 3.40, away: 2.10 }
     },
     {
       id: 2,
       sport: 'Basketball',
-      teams: ['Lakers', 'Warriors'],
+      teams: ['Los Angeles Lakers', 'Golden State Warriors'],
       scores: [89, 92],
       time: '4th Quarter',
       status: 'LIVE',
       league: 'NBA',
-      icon: '🏀'
+      icon: '🏀',
+      odds: { home: 2.10, away: 1.75 }
     },
     {
       id: 3,
       sport: 'Soccer',
-      teams: ['Real Madrid', 'Barcelona'],
+      teams: ['Real Madrid', 'FC Barcelona'],
       scores: [2, 1],
       time: '78\'',
       status: 'LIVE',
       league: 'La Liga',
-      icon: '⚽'
+      icon: '⚽',
+      odds: { home: 1.95, draw: 3.20, away: 2.05 }
     },
     {
       id: 4,
       sport: 'Tennis',
-      teams: ['Djokovic', 'Nadal'],
-      scores: ['6-4', '5-3'],
+      teams: ['Novak Djokovic', 'Rafael Nadal'],
+      scores: ['6-4', '3-2'],
       time: 'Set 2',
       status: 'LIVE',
       league: 'French Open',
-      icon: '🎾'
+      icon: '🎾',
+      odds: { home: 1.65, away: 2.25 }
     },
     {
       id: 5,
-      sport: 'Hockey',
-      teams: ['Rangers', 'Bruins'],
-      scores: [3, 2],
-      time: '2nd Period',
+      sport: 'Baseball',
+      teams: ['New York Yankees', 'Boston Red Sox'],
+      scores: [5, 3],
+      time: '7th Inning',
       status: 'LIVE',
-      league: 'NHL',
-      icon: '🏒'
+      league: 'MLB',
+      icon: '⚾',
+      odds: { home: 1.90, away: 1.95 }
     }
   ];
+
+  // Fetch live sports data from backend
+  useEffect(() => {
+    const fetchSportsData = async () => {
+      try {
+        // Update this URL to your backend (local for testing, Render for production)
+        const response = await fetch('http://localhost:5001/api/events');
+        const data = await response.json();
+        setSportsData(data.events || defaultSportsEvents);
+      } catch (error) {
+        console.error('Failed to fetch sports data:', error);
+        setSportsData(defaultSportsEvents);
+      }
+    };
+
+    fetchSportsData();
+    
+    // Refresh data every 30 seconds
+    const interval = setInterval(fetchSportsData, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Translations
   const translations = {
@@ -80,10 +116,14 @@ function App() {
       liveEvents: 'Live Events',
       joinPools: 'Join active betting pools now',
       joinBet: 'Join Bet',
+      placeBet: 'Place Bet',
       sports: 'Sports',
       live: 'Live',
       myBets: 'My Bets',
-      login: 'Login'
+      login: 'Login',
+      logout: 'Logout',
+      welcome: 'Welcome',
+      dashboard: 'Dashboard'
     },
     es: {
       title: 'Apuesta Contra Usuarios Reales',
@@ -102,10 +142,14 @@ function App() {
       liveEvents: 'Eventos en Vivo',
       joinPools: 'Únete a pools de apuestas activos ahora',
       joinBet: 'Unirse a Apuesta',
+      placeBet: 'Hacer Apuesta',
       sports: 'Deportes',
       live: 'En Vivo',
       myBets: 'Mis Apuestas',
-      login: 'Iniciar Sesión'
+      login: 'Iniciar Sesión',
+      logout: 'Cerrar Sesión',
+      welcome: 'Bienvenido',
+      dashboard: 'Panel'
     },
     fr: {
       title: 'Pariez Contre de Vrais Utilisateurs',
@@ -124,10 +168,14 @@ function App() {
       liveEvents: 'Événements en Direct',
       joinPools: 'Rejoignez les pools de paris actifs maintenant',
       joinBet: 'Rejoindre le Pari',
+      placeBet: 'Placer un Pari',
       sports: 'Sports',
       live: 'En Direct',
       myBets: 'Mes Paris',
-      login: 'Se Connecter'
+      login: 'Se Connecter',
+      logout: 'Se Déconnecter',
+      welcome: 'Bienvenue',
+      dashboard: 'Tableau de Bord'
     },
     de: {
       title: 'Wetten Sie Gegen Echte Nutzer',
@@ -146,10 +194,14 @@ function App() {
       liveEvents: 'Live Events',
       joinPools: 'Treten Sie jetzt aktiven Wett-Pools bei',
       joinBet: 'Wette Beitreten',
+      placeBet: 'Wette Platzieren',
       sports: 'Sport',
       live: 'Live',
       myBets: 'Meine Wetten',
-      login: 'Anmelden'
+      login: 'Anmelden',
+      logout: 'Abmelden',
+      welcome: 'Willkommen',
+      dashboard: 'Dashboard'
     },
     pt: {
       title: 'Aposte Contra Usuários Reais',
@@ -168,10 +220,14 @@ function App() {
       liveEvents: 'Eventos ao Vivo',
       joinPools: 'Junte-se a pools de apostas ativas agora',
       joinBet: 'Participar da Aposta',
+      placeBet: 'Fazer Aposta',
       sports: 'Esportes',
       live: 'Ao Vivo',
       myBets: 'Minhas Apostas',
-      login: 'Entrar'
+      login: 'Entrar',
+      logout: 'Sair',
+      welcome: 'Bem-vindo',
+      dashboard: 'Painel'
     }
   };
 
@@ -186,7 +242,6 @@ function App() {
           setUserLocation({ latitude, longitude });
           
           // Simple language detection based on common regions
-          // In production, you'd use a proper geolocation API
           if (latitude > 35 && latitude < 42 && longitude > -9 && longitude < 3) {
             setCurrentLanguage('es'); // Spain
           } else if (latitude > 41 && latitude < 51 && longitude > -5 && longitude < 10) {
@@ -207,32 +262,45 @@ function App() {
   // Live events rotation
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentEventIndex((prev) => (prev + 1) % sportsEvents.length);
+      setCurrentEventIndex((prev) => (prev + 1) % (sportsData.length || defaultSportsEvents.length));
     }, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, [sportsData]);
 
-  // Simulate live score updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setLiveEvents(prev => {
-        const updated = [...sportsEvents];
-        const randomEvent = updated[Math.floor(Math.random() * updated.length)];
-        if (Math.random() > 0.7) { // 30% chance of score update
-          if (randomEvent.sport === 'Tennis') {
-            // Tennis scoring logic would be more complex
-          } else {
-            const teamIndex = Math.random() > 0.5 ? 0 : 1;
-            randomEvent.scores[teamIndex] += 1;
-          }
-        }
-        return updated;
-      });
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+  // Handle bet placement
+  const handlePlaceBet = async (eventId, betType, odds) => {
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+      return;
+    }
 
-  const currentEvent = sportsEvents[currentEventIndex];
+    try {
+      // This would integrate with your betting API
+      const betData = {
+        event_id: eventId,
+        bet_type: betType,
+        amount: 10, // Default amount, would be user input
+        odds: odds
+      };
+
+      // Make API call to place bet
+      console.log('Placing bet:', betData);
+      alert(`Bet placed successfully! ${betType} at ${odds} odds`);
+    } catch (error) {
+      console.error('Failed to place bet:', error);
+      alert('Failed to place bet. Please try again.');
+    }
+  };
+
+  const eventsToShow = sportsData.length > 0 ? sportsData : defaultSportsEvents;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-2xl">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="App">
@@ -243,7 +311,9 @@ function App() {
           <nav className="nav-links">
             <a href="#" className="nav-link active">{t('sports')}</a>
             <a href="#" className="nav-link">{t('live')}</a>
-            <a href="#" className="nav-link">{t('myBets')}</a>
+            {isAuthenticated && (
+              <a href="#" className="nav-link">{t('myBets')}</a>
+            )}
             <select 
               value={currentLanguage} 
               onChange={(e) => setCurrentLanguage(e.target.value)}
@@ -255,7 +325,20 @@ function App() {
               <option value="de">🇩🇪 DE</option>
               <option value="pt">🇧🇷 PT</option>
             </select>
-            <button className="login-btn">{t('login')}</button>
+            
+            {isAuthenticated ? (
+              <div className="user-menu">
+                <span className="welcome-text">{t('welcome')}, {user?.name}</span>
+                <button onClick={logout} className="logout-btn">{t('logout')}</button>
+              </div>
+            ) : (
+              <button 
+                onClick={() => setShowLoginModal(true)} 
+                className="login-btn"
+              >
+                {t('login')}
+              </button>
+            )}
           </nav>
         </div>
       </header>
@@ -273,22 +356,27 @@ function App() {
             <div className="sport-icon">⚽</div>
             <div className="sport-icon">🏀</div>
             <div className="sport-icon">🎾</div>
-            <div className="sport-icon">🏒</div>
+            <div className="sport-icon">⚾</div>
           </div>
           
           <div className="action-buttons">
-            <button className="btn btn-primary">{t('startBetting')}</button>
+            <button 
+              className="btn btn-primary"
+              onClick={() => isAuthenticated ? document.getElementById('live-events').scrollIntoView() : setShowLoginModal(true)}
+            >
+              {t('startBetting')}
+            </button>
             <button className="btn btn-secondary">{t('watchDemo')}</button>
           </div>
         </section>
         
         {/* Live Events Section */}
-        <section className="live-events">
+        <section id="live-events" className="live-events">
           <h2 className="section-title">
             <span className="live-indicator"></span> {t('liveEvents')}
           </h2>
           
-          {sportsEvents.map((event) => (
+          {eventsToShow.map((event) => (
             <div key={event.id} className="event-card">
               <div className="event-header">
                 <span className="event-league">{event.icon} {event.league}</span>
@@ -296,21 +384,35 @@ function App() {
               </div>
               <div className="event-teams">{event.teams[0]} vs {event.teams[1]}</div>
               <div className="event-score">
-                {event.sport === 'Tennis' ? event.scores.join(', ') : `${event.scores[0]} - ${event.scores[1]}`}
+                {event.sport === 'Tennis' ? 
+                  event.scores.join(', ') : 
+                  `${event.scores[0]} - ${event.scores[1]}`
+                }
               </div>
               <div className="betting-odds">
-                <div className="odds-button">
+                <button 
+                  className="odds-button"
+                  onClick={() => handlePlaceBet(event.id, 'home', event.odds?.home || 1.85)}
+                >
                   <div>{event.teams[0]}</div>
-                  <div className="odds-value">1.85</div>
-                </div>
-                <div className="odds-button">
-                  <div>Draw</div>
-                  <div className="odds-value">3.40</div>
-                </div>
-                <div className="odds-button">
+                  <div className="odds-value">{event.odds?.home || '1.85'}</div>
+                </button>
+                {event.odds?.draw && (
+                  <button 
+                    className="odds-button"
+                    onClick={() => handlePlaceBet(event.id, 'draw', event.odds.draw)}
+                  >
+                    <div>Draw</div>
+                    <div className="odds-value">{event.odds.draw}</div>
+                  </button>
+                )}
+                <button 
+                  className="odds-button"
+                  onClick={() => handlePlaceBet(event.id, 'away', event.odds?.away || 2.10)}
+                >
                   <div>{event.teams[1]}</div>
-                  <div className="odds-value">2.10</div>
-                </div>
+                  <div className="odds-value">{event.odds?.away || '2.10'}</div>
+                </button>
               </div>
             </div>
           ))}
@@ -319,7 +421,7 @@ function App() {
         {/* Live Ticker */}
         <div className="live-ticker">
           <div className="ticker-content">
-            {sportsEvents.map((event) => (
+            {eventsToShow.map((event) => (
               <div key={event.id} className="ticker-item">
                 {event.icon} {event.teams[0]} {event.scores[0]} - {event.scores[1]} {event.teams[1]} • {event.time}
               </div>
@@ -384,7 +486,35 @@ function App() {
           </div>
         </div>
       </footer>
+
+      {/* Authentication Modals */}
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onSwitchToRegister={() => {
+          setShowLoginModal(false);
+          setShowRegisterModal(true);
+        }}
+      />
+      
+      <RegisterModal
+        isOpen={showRegisterModal}
+        onClose={() => setShowRegisterModal(false)}
+        onSwitchToLogin={() => {
+          setShowRegisterModal(false);
+          setShowLoginModal(true);
+        }}
+      />
     </div>
+  );
+}
+
+// Main App Component with AuthProvider
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 
