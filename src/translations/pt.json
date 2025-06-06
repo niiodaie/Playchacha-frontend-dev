@@ -1,0 +1,69 @@
+{
+  "title": "Apostar Contra Usuários Reais",
+  "subtitle": "Globalmente",
+  "description": "Junte-se a mais de 1,2 milhão de usuários apostando em eventos esportivos ao vivo com garantia de escrow seguro.",
+  "cta": "Começar a Apostar Agora",
+  "stats": {
+    "users": "1,2M+ Usuários Ativos",
+    "volume": "R$ 250M+ Volume de Apostas",
+    "winRate": "94,7% Taxa de Vitória"
+  },
+  "features": {
+    "escrow": {
+      "title": "Escrow Seguro",
+      "description": "Fundos protegidos até a resolução da aposta"
+    },
+    "global": {
+      "title": "Eventos Globais",
+      "description": "Aposte em esportes de todo o mundo"
+    },
+    "instant": {
+      "title": "Pagamentos Instantâneos",
+      "description": "Receba seus ganhos imediatamente"
+    }
+  },
+  "liveEvents": {
+    "title": "Eventos Ao Vivo",
+    "subtitle": "Aposte em tempo real",
+    "events": [
+      {
+        "sport": "Futebol",
+        "home": "Flamengo",
+        "away": "Palmeiras",
+        "pool": "R$ 180.000"
+      },
+      {
+        "sport": "Basquete",
+        "home": "Lakers",
+        "away": "Warriors", 
+        "pool": "R$ 120.000"
+      },
+      {
+        "sport": "Futebol",
+        "home": "Real Madrid",
+        "away": "Barcelona",
+        "pool": "R$ 300.000"
+      }
+    ]
+  },
+  "footer": {
+    "poweredBy": "Desenvolvido por",
+    "company": "PlayChaCha",
+    "rights": "Todos os direitos reservados.",
+    "links": {
+      "about": "Sobre",
+      "contact": "Contato",
+      "privacy": "Privacidade",
+      "terms": "Termos"
+    }
+  },
+  "nav": {
+    "sports": "Esportes",
+    "live": "Ao Vivo",
+    "myBets": "Minhas Apostas",
+    "wallet": "Carteira",
+    "login": "Entrar",
+    "register": "Cadastrar"
+  }
+}
+

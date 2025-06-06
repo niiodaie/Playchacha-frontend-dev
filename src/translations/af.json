@@ -1,0 +1,69 @@
+{
+  "title": "Bet Against Real Users",
+  "subtitle": "Worldwide",
+  "description": "Join over 1.2 million users betting on live sports events with secure escrow guarantee.",
+  "cta": "Start Betting Now",
+  "stats": {
+    "users": "1.2M+ Active Users",
+    "volume": "R 750M+ Betting Volume",
+    "winRate": "94.7% Win Rate"
+  },
+  "features": {
+    "escrow": {
+      "title": "Secure Escrow",
+      "description": "Funds protected until bet resolution"
+    },
+    "global": {
+      "title": "Global Events",
+      "description": "Bet on sports from around the world"
+    },
+    "instant": {
+      "title": "Instant Payouts",
+      "description": "Receive your winnings immediately"
+    }
+  },
+  "liveEvents": {
+    "title": "Live Events",
+    "subtitle": "Bet in real-time",
+    "events": [
+      {
+        "sport": "Football",
+        "home": "Kaizer Chiefs",
+        "away": "Orlando Pirates",
+        "pool": "R 45,000"
+      },
+      {
+        "sport": "Rugby",
+        "home": "Springboks",
+        "away": "All Blacks",
+        "pool": "R 80,000"
+      },
+      {
+        "sport": "Cricket",
+        "home": "Proteas",
+        "away": "England",
+        "pool": "R 60,000"
+      }
+    ]
+  },
+  "footer": {
+    "poweredBy": "Powered by",
+    "company": "PlayChaCha",
+    "rights": "All rights reserved.",
+    "links": {
+      "about": "About",
+      "contact": "Contact",
+      "privacy": "Privacy",
+      "terms": "Terms"
+    }
+  },
+  "nav": {
+    "sports": "Sports",
+    "live": "Live",
+    "myBets": "My Bets",
+    "wallet": "Wallet",
+    "login": "Login",
+    "register": "Register"
+  }
+}
+

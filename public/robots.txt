@@ -1,0 +1,24 @@
+# Play ChaCha - playchacha.net
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://playchacha.net/sitemap.xml
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1
+
+# Disallow admin areas (when implemented)
+Disallow: /admin/
+Disallow: /api/
+Disallow: /private/
+
+# Allow important pages
+Allow: /
+Allow: /sports
+Allow: /live
+Allow: /about
+Allow: /help
+Allow: /terms
+Allow: /privacy
+
