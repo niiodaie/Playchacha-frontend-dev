@@ -37,7 +37,6 @@
     "@testing-library/user-event": "^14.4.3",
     "jsdom": "^22.1.0"
   }
-}
   },
   "engines": {
     "node": ">=18.0.0"
