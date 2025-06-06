@@ -2,20 +2,24 @@ import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginModal from './components/LoginModal';
 import RegisterModal from './components/RegisterModal';
+import SportsPage from './components/SportsPage';
+import LivePage from './components/LivePage';
+import MyBetsPage from './components/MyBetsPage';
+import DemoModal from './components/DemoModal';
 import './App.css';
 
-// Main App Component with Authentication
+// Main App Component with Working Navigation
 function AppContent() {
+  const [currentPage, setCurrentPage] = useState('home');
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const [userLocation, setUserLocation] = useState(null);
-  const [liveEvents, setLiveEvents] = useState([]);
-  const [currentEventIndex, setCurrentEventIndex] = useState(0);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [showDemoModal, setShowDemoModal] = useState(false);
   const [sportsData, setSportsData] = useState([]);
 
   // Get authentication state
-  const { user, logout, isAuthenticated, loading } = useAuth();
+  const { user, logout, isAuthenticated, loading, placeBet } = useAuth();
 
   // Sports events data with live updates
   const defaultSportsEvents = [
@@ -80,8 +84,13 @@ function AppContent() {
   useEffect(() => {
     const fetchSportsData = async () => {
       try {
-        // Update this URL to your backend (local for testing, Render for production)
-        const response = await fetch('http://localhost:5001/api/events');
+        // For production, change to your Render backend URL
+        const response = await fetch('https://your-render-backend.onrender.com/api/events');
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch');
+        }
+        
         const data = await response.json();
         setSportsData(data.events || defaultSportsEvents);
       } catch (error) {
@@ -123,7 +132,8 @@ function AppContent() {
       login: 'Login',
       logout: 'Logout',
       welcome: 'Welcome',
-      dashboard: 'Dashboard'
+      dashboard: 'Dashboard',
+      home: 'Home'
     },
     es: {
       title: 'Apuesta Contra Usuarios Reales',
@@ -149,7 +159,8 @@ function AppContent() {
       login: 'Iniciar Sesión',
       logout: 'Cerrar Sesión',
       welcome: 'Bienvenido',
-      dashboard: 'Panel'
+      dashboard: 'Panel',
+      home: 'Inicio'
     },
     fr: {
       title: 'Pariez Contre de Vrais Utilisateurs',
@@ -175,7 +186,8 @@ function AppContent() {
       login: 'Se Connecter',
       logout: 'Se Déconnecter',
       welcome: 'Bienvenue',
-      dashboard: 'Tableau de Bord'
+      dashboard: 'Tableau de Bord',
+      home: 'Accueil'
     },
     de: {
       title: 'Wetten Sie Gegen Echte Nutzer',
@@ -201,7 +213,8 @@ function AppContent() {
       login: 'Anmelden',
       logout: 'Abmelden',
       welcome: 'Willkommen',
-      dashboard: 'Dashboard'
+      dashboard: 'Dashboard',
+      home: 'Startseite'
     },
     pt: {
       title: 'Aposte Contra Usuários Reais',
@@ -227,11 +240,21 @@ function AppContent() {
       login: 'Entrar',
       logout: 'Sair',
       welcome: 'Bem-vindo',
-      dashboard: 'Painel'
+      dashboard: 'Painel',
+      home: 'Início'
     }
   };
 
   const t = (key) => translations[currentLanguage]?.[key] || translations.en[key];
+
+  // Navigation handler
+  const handleNavigation = (page) => {
+    if (page === 'myBets' && !isAuthenticated) {
+      setShowLoginModal(true);
+      return;
+    }
+    setCurrentPage(page);
+  };
 
   // Geolocation detection
   useEffect(() => {
@@ -259,14 +282,6 @@ function AppContent() {
     }
   }, []);
 
-  // Live events rotation
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentEventIndex((prev) => (prev + 1) % (sportsData.length || defaultSportsEvents.length));
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [sportsData]);
-
   // Handle bet placement
   const handlePlaceBet = async (eventId, betType, odds) => {
     if (!isAuthenticated) {
@@ -275,17 +290,20 @@ function AppContent() {
     }
 
     try {
-      // This would integrate with your betting API
       const betData = {
         event_id: eventId,
         bet_type: betType,
-        amount: 10, // Default amount, would be user input
+        amount: 10, // Default amount, would be user input in real app
         odds: odds
       };
 
-      // Make API call to place bet
-      console.log('Placing bet:', betData);
-      alert(`Bet placed successfully! ${betType} at ${odds} odds`);
+      const result = await placeBet(betData);
+      
+      if (result.success) {
+        alert(`Bet placed successfully! ${betType} at ${odds} odds`);
+      } else {
+        alert(`Failed to place bet: ${result.error}`);
+      }
     } catch (error) {
       console.error('Failed to place bet:', error);
       alert('Failed to place bet. Please try again.');
@@ -302,17 +320,200 @@ function AppContent() {
     );
   }
 
+  // Render different pages based on navigation
+  const renderPage = () => {
+    switch (currentPage) {
+      case 'sports':
+        return <SportsPage events={eventsToShow} onPlaceBet={handlePlaceBet} t={t} />;
+      case 'live':
+        return <LivePage events={eventsToShow} onPlaceBet={handlePlaceBet} t={t} />;
+      case 'myBets':
+        return <MyBetsPage t={t} />;
+      default:
+        return renderHomePage();
+    }
+  };
+
+  const renderHomePage = () => (
+    <>
+      {/* Hero Section */}
+      <section className="hero-section">
+        <h1 className="hero-title">
+          {t('title')} <span>{t('subtitle')}</span>
+        </h1>
+        <p className="hero-subtitle">{t('description')}</p>
+        
+        <div className="sports-icons">
+          <div className="sport-icon">🏈</div>
+          <div className="sport-icon">⚽</div>
+          <div className="sport-icon">🏀</div>
+          <div className="sport-icon">🎾</div>
+          <div className="sport-icon">⚾</div>
+        </div>
+        
+        <div className="action-buttons">
+          <button 
+            className="btn btn-primary"
+            onClick={() => isAuthenticated ? handleNavigation('sports') : setShowLoginModal(true)}
+          >
+            {t('startBetting')}
+          </button>
+          <button 
+            className="btn btn-secondary"
+            onClick={() => setShowDemoModal(true)}
+          >
+            {t('watchDemo')}
+          </button>
+        </div>
+      </section>
+      
+      {/* Live Events Section */}
+      <section id="live-events" className="live-events">
+        <h2 className="section-title">
+          <span className="live-indicator"></span> {t('liveEvents')}
+        </h2>
+        
+        {eventsToShow.slice(0, 3).map((event) => (
+          <div key={event.id} className="event-card">
+            <div className="event-header">
+              <span className="event-league">{event.icon} {event.league}</span>
+              <span className="event-time">{event.status}</span>
+            </div>
+            <div className="event-teams">{event.teams[0]} vs {event.teams[1]}</div>
+            <div className="event-score">
+              {event.sport === 'Tennis' ? 
+                event.scores.join(', ') : 
+                `${event.scores[0]} - ${event.scores[1]}`
+              }
+            </div>
+            <div className="betting-odds">
+              <button 
+                className="odds-button"
+                onClick={() => handlePlaceBet(event.id, 'home', event.odds?.home || 1.85)}
+              >
+                <div>{event.teams[0]}</div>
+                <div className="odds-value">{event.odds?.home || '1.85'}</div>
+              </button>
+              {event.odds?.draw && (
+                <button 
+                  className="odds-button"
+                  onClick={() => handlePlaceBet(event.id, 'draw', event.odds.draw)}
+                >
+                  <div>Draw</div>
+                  <div className="odds-value">{event.odds.draw}</div>
+                </button>
+              )}
+              <button 
+                className="odds-button"
+                onClick={() => handlePlaceBet(event.id, 'away', event.odds?.away || 2.10)}
+              >
+                <div>{event.teams[1]}</div>
+                <div className="odds-value">{event.odds?.away || '2.10'}</div>
+              </button>
+            </div>
+          </div>
+        ))}
+        
+        <div className="view-all-container">
+          <button 
+            className="btn btn-outline"
+            onClick={() => handleNavigation('sports')}
+          >
+            View All Sports
+          </button>
+        </div>
+      </section>
+      
+      {/* Live Ticker */}
+      <div className="live-ticker">
+        <div className="ticker-content">
+          {eventsToShow.map((event) => (
+            <div key={event.id} className="ticker-item">
+              {event.icon} {event.teams[0]} {event.scores[0]} - {event.scores[1]} {event.teams[1]} • {event.time}
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      {/* Features Section */}
+      <section className="features-section">
+        <h2 className="section-title">{t('whyChoose')}</h2>
+        <div className="features-grid">
+          <div className="feature-card">
+            <div className="feature-icon">🔒</div>
+            <h3>{t('secureEscrow')}</h3>
+            <p>Advanced encryption and secure escrow system protecting all transactions</p>
+          </div>
+          <div className="feature-card">
+            <div className="feature-icon">🌎</div>
+            <h3>{t('globalEvents')}</h3>
+            <p>Access to thousands of sporting events from around the world</p>
+          </div>
+          <div className="feature-card">
+            <div className="feature-icon">⚡</div>
+            <h3>{t('instantPayouts')}</h3>
+            <p>Receive your winnings instantly with our lightning-fast payment system</p>
+          </div>
+        </div>
+      </section>
+      
+      {/* Stats Section */}
+      <section className="stats-section">
+        <div className="stats-grid">
+          <div className="stat-card">
+            <div className="stat-value">1.2M+</div>
+            <div className="stat-label">{t('activeUsers')}</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-value">$50M+</div>
+            <div className="stat-label">{t('bettingVolume')}</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-value">94.7%</div>
+            <div className="stat-label">{t('winRate')}</div>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+
   return (
     <div className="App">
       {/* Header */}
       <header className="header">
         <div className="header-container">
-          <div className="logo">PlayChaCha</div>
+          <button 
+            className="logo"
+            onClick={() => handleNavigation('home')}
+          >
+            PlayChaCha
+          </button>
           <nav className="nav-links">
-            <a href="#" className="nav-link active">{t('sports')}</a>
-            <a href="#" className="nav-link">{t('live')}</a>
+            <button 
+              className={`nav-link ${currentPage === 'home' ? 'active' : ''}`}
+              onClick={() => handleNavigation('home')}
+            >
+              {t('home')}
+            </button>
+            <button 
+              className={`nav-link ${currentPage === 'sports' ? 'active' : ''}`}
+              onClick={() => handleNavigation('sports')}
+            >
+              {t('sports')}
+            </button>
+            <button 
+              className={`nav-link ${currentPage === 'live' ? 'active' : ''}`}
+              onClick={() => handleNavigation('live')}
+            >
+              {t('live')}
+            </button>
             {isAuthenticated && (
-              <a href="#" className="nav-link">{t('myBets')}</a>
+              <button 
+                className={`nav-link ${currentPage === 'myBets' ? 'active' : ''}`}
+                onClick={() => handleNavigation('myBets')}
+              >
+                {t('myBets')}
+              </button>
             )}
             <select 
               value={currentLanguage} 
@@ -344,150 +545,27 @@ function AppContent() {
       </header>
 
       <main className="main-content">
-        {/* Hero Section */}
-        <section className="hero-section">
-          <h1 className="hero-title">
-            {t('title')} <span>{t('subtitle')}</span>
-          </h1>
-          <p className="hero-subtitle">{t('description')}</p>
-          
-          <div className="sports-icons">
-            <div className="sport-icon">🏈</div>
-            <div className="sport-icon">⚽</div>
-            <div className="sport-icon">🏀</div>
-            <div className="sport-icon">🎾</div>
-            <div className="sport-icon">⚾</div>
-          </div>
-          
-          <div className="action-buttons">
-            <button 
-              className="btn btn-primary"
-              onClick={() => isAuthenticated ? document.getElementById('live-events').scrollIntoView() : setShowLoginModal(true)}
-            >
-              {t('startBetting')}
-            </button>
-            <button className="btn btn-secondary">{t('watchDemo')}</button>
-          </div>
-        </section>
-        
-        {/* Live Events Section */}
-        <section id="live-events" className="live-events">
-          <h2 className="section-title">
-            <span className="live-indicator"></span> {t('liveEvents')}
-          </h2>
-          
-          {eventsToShow.map((event) => (
-            <div key={event.id} className="event-card">
-              <div className="event-header">
-                <span className="event-league">{event.icon} {event.league}</span>
-                <span className="event-time">{event.status}</span>
-              </div>
-              <div className="event-teams">{event.teams[0]} vs {event.teams[1]}</div>
-              <div className="event-score">
-                {event.sport === 'Tennis' ? 
-                  event.scores.join(', ') : 
-                  `${event.scores[0]} - ${event.scores[1]}`
-                }
-              </div>
-              <div className="betting-odds">
-                <button 
-                  className="odds-button"
-                  onClick={() => handlePlaceBet(event.id, 'home', event.odds?.home || 1.85)}
-                >
-                  <div>{event.teams[0]}</div>
-                  <div className="odds-value">{event.odds?.home || '1.85'}</div>
-                </button>
-                {event.odds?.draw && (
-                  <button 
-                    className="odds-button"
-                    onClick={() => handlePlaceBet(event.id, 'draw', event.odds.draw)}
-                  >
-                    <div>Draw</div>
-                    <div className="odds-value">{event.odds.draw}</div>
-                  </button>
-                )}
-                <button 
-                  className="odds-button"
-                  onClick={() => handlePlaceBet(event.id, 'away', event.odds?.away || 2.10)}
-                >
-                  <div>{event.teams[1]}</div>
-                  <div className="odds-value">{event.odds?.away || '2.10'}</div>
-                </button>
-              </div>
-            </div>
-          ))}
-        </section>
-        
-        {/* Live Ticker */}
-        <div className="live-ticker">
-          <div className="ticker-content">
-            {eventsToShow.map((event) => (
-              <div key={event.id} className="ticker-item">
-                {event.icon} {event.teams[0]} {event.scores[0]} - {event.scores[1]} {event.teams[1]} • {event.time}
-              </div>
-            ))}
-          </div>
-        </div>
-        
-        {/* Features Section */}
-        <section className="features-section">
-          <h2 className="section-title">{t('whyChoose')}</h2>
-          <div className="features-grid">
-            <div className="feature-card">
-              <div className="feature-icon">🔒</div>
-              <h3>{t('secureEscrow')}</h3>
-              <p>Advanced encryption and secure escrow system protecting all transactions</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">🌎</div>
-              <h3>{t('globalEvents')}</h3>
-              <p>Access to thousands of sporting events from around the world</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">⚡</div>
-              <h3>{t('instantPayouts')}</h3>
-              <p>Receive your winnings instantly with our lightning-fast payment system</p>
-            </div>
-          </div>
-        </section>
-        
-        {/* Stats Section */}
-        <section className="stats-section">
-          <div className="stats-grid">
-            <div className="stat-card">
-              <div className="stat-value">1.2M+</div>
-              <div className="stat-label">{t('activeUsers')}</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-value">$50M+</div>
-              <div className="stat-label">{t('bettingVolume')}</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-value">94.7%</div>
-              <div className="stat-label">{t('winRate')}</div>
-            </div>
-          </div>
-        </section>
+        {renderPage()}
       </main>
       
       <footer className="footer">
         <div className="footer-content">
           <div className="footer-links">
-            <a href="#" className="footer-link">About Us</a>
-            <a href="#" className="footer-link">Terms of Service</a>
-            <a href="#" className="footer-link">Privacy Policy</a>
-            <a href="#" className="footer-link">Contact</a>
+            <button className="footer-link">About Us</button>
+            <button className="footer-link">Terms of Service</button>
+            <button className="footer-link">Privacy Policy</button>
+            <button className="footer-link">Contact</button>
           </div>
           <div className="footer-bottom">
             <p>© 2025 PlayChaCha. All rights reserved.</p>
             <p className="visnec-branding">
-              Powered by <a href="https://visnec.com" className="visnec-link">Visnec</a>
+              Powered by <a href="https://visnec.com" className="visnec-link" target="_blank" rel="noopener noreferrer">Visnec</a>
             </p>
           </div>
         </div>
       </footer>
 
-      {/* Authentication Modals */}
+      {/* Modals */}
       <LoginModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
@@ -504,6 +582,11 @@ function AppContent() {
           setShowRegisterModal(false);
           setShowLoginModal(true);
         }}
+      />
+
+      <DemoModal
+        isOpen={showDemoModal}
+        onClose={() => setShowDemoModal(false)}
       />
     </div>
   );
