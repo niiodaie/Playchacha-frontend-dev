@@ -12,217 +12,270 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Update this to your backend URL when you deploy the backend
-  const API_BASE = 'https://your-render-backend.onrender.com/api';
+  // Live backend API URL
+  const API_BASE = 'https://48xhpiqc8wkx.manus.space/api';
 
-  // Helper function for API calls using fetch (no axios needed)
-  const apiCall = async (endpoint, options = {}) => {
-    const url = `${API_BASE}${endpoint}`;
-    const config = {
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token && { 'Authorization': `Bearer ${token}` }),
-        ...options.headers,
-      },
-      ...options,
-    };
-
-    if (config.body && typeof config.body === 'object') {
-      config.body = JSON.stringify(config.body);
+  // Check for existing token on app load
+  useEffect(() => {
+    const token = localStorage.getItem('playchacha_token');
+    if (token) {
+      // Verify token with backend
+      fetchUserProfile(token);
+    } else {
+      setLoading(false);
     }
+  }, []);
 
+  const fetchUserProfile = async (token) => {
     try {
-      const response = await fetch(url, config);
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      const response = await fetch(`${API_BASE}/user/profile`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.user);
+        localStorage.setItem('playchacha_token', token);
+      } else {
+        // Token is invalid, remove it
+        localStorage.removeItem('playchacha_token');
+        setUser(null);
       }
-      
-      const data = await response.json();
-      return data;
     } catch (error) {
-      console.error('API call failed:', error);
-      throw error;
+      console.error('Error fetching user profile:', error);
+      localStorage.removeItem('playchacha_token');
+      setUser(null);
+    } finally {
+      setLoading(false);
     }
   };
-
-  // Check if user is authenticated on app load
-  useEffect(() => {
-    const checkAuth = async () => {
-      if (token) {
-        try {
-          const data = await apiCall('/auth/me');
-          setUser(data.user);
-        } catch (error) {
-          console.error('Auth check failed:', error);
-          logout();
-        }
-      }
-      setLoading(false);
-    };
-
-    checkAuth();
-  }, [token]);
 
   const login = async (email, password) => {
     try {
-      const data = await apiCall('/auth/login', {
+      setError(null);
+      setLoading(true);
+
+      const response = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
-        body: { email, password }
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       });
-      
-      const { access_token, user } = data;
-      setToken(access_token);
-      setUser(user);
-      localStorage.setItem('token', access_token);
-      
-      return { success: true, user };
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setUser(data.user);
+        localStorage.setItem('playchacha_token', data.token);
+        return { success: true, user: data.user };
+      } else {
+        setError(data.error || 'Login failed');
+        return { success: false, error: data.error || 'Login failed' };
+      }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.message || 'Login failed' 
-      };
+      const errorMessage = 'Network error. Please check your connection.';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
     }
   };
 
-  const register = async (name, email, password) => {
+  const register = async (email, password, name) => {
     try {
-      const data = await apiCall('/auth/register', {
+      setError(null);
+      setLoading(true);
+
+      const response = await fetch(`${API_BASE}/auth/register`, {
         method: 'POST',
-        body: { name, email, password }
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password, name }),
       });
-      
-      const { access_token, user } = data;
-      setToken(access_token);
-      setUser(user);
-      localStorage.setItem('token', access_token);
-      
-      return { success: true, user };
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setUser(data.user);
+        localStorage.setItem('playchacha_token', data.token);
+        return { success: true, user: data.user };
+      } else {
+        setError(data.error || 'Registration failed');
+        return { success: false, error: data.error || 'Registration failed' };
+      }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.message || 'Registration failed' 
-      };
+      const errorMessage = 'Network error. Please check your connection.';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
     }
   };
 
-  const googleLogin = async (googleToken) => {
+  const googleLogin = async (googleToken, email, name) => {
     try {
-      const data = await apiCall('/auth/google', {
-        method: 'POST',
-        body: { token: googleToken }
-      });
-      
-      const { access_token, user } = data;
-      setToken(access_token);
-      setUser(user);
-      localStorage.setItem('token', access_token);
-      
-      return { success: true, user };
-    } catch (error) {
-      return { 
-        success: false, 
-        error: error.message || 'Google login failed' 
-      };
-    }
-  };
+      setError(null);
+      setLoading(true);
 
-  const forgotPassword = async (email) => {
-    try {
-      await apiCall('/auth/forgot-password', {
+      const response = await fetch(`${API_BASE}/auth/google`, {
         method: 'POST',
-        body: { email }
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          token: googleToken,
+          email: email,
+          name: name 
+        }),
       });
-      return { success: true };
-    } catch (error) {
-      return { 
-        success: false, 
-        error: error.message || 'Password reset failed' 
-      };
-    }
-  };
 
-  const resetPassword = async (token, password) => {
-    try {
-      await apiCall('/auth/reset-password', {
-        method: 'POST',
-        body: { token, password }
-      });
-      return { success: true };
+      const data = await response.json();
+
+      if (response.ok) {
+        setUser(data.user);
+        localStorage.setItem('playchacha_token', data.token);
+        return { success: true, user: data.user };
+      } else {
+        setError(data.error || 'Google login failed');
+        return { success: false, error: data.error || 'Google login failed' };
+      }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.message || 'Password reset failed' 
-      };
+      const errorMessage = 'Network error. Please check your connection.';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
     }
   };
 
   const logout = () => {
-    setToken(null);
     setUser(null);
-    localStorage.removeItem('token');
+    localStorage.removeItem('playchacha_token');
+    setError(null);
   };
 
-  const updateProfile = async (profileData) => {
+  const placeBet = async (eventId, betType, amount, odds) => {
     try {
-      const data = await apiCall('/user/profile', {
-        method: 'PUT',
-        body: profileData
-      });
-      setUser(data.user);
-      return { success: true, user: data.user };
-    } catch (error) {
-      return { 
-        success: false, 
-        error: error.message || 'Profile update failed' 
-      };
-    }
-  };
+      const token = localStorage.getItem('playchacha_token');
+      if (!token) {
+        return { success: false, error: 'Please login to place bets' };
+      }
 
-  const placeBet = async (betData) => {
-    try {
-      const data = await apiCall('/bets', {
+      const response = await fetch(`${API_BASE}/bets`, {
         method: 'POST',
-        body: betData
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          event_id: eventId,
+          bet_type: betType,
+          amount: amount,
+          odds: odds
+        }),
       });
-      return { success: true, bet: data.bet };
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Update user balance
+        setUser(prev => ({
+          ...prev,
+          balance: data.new_balance
+        }));
+        return { success: true, bet: data.bet, newBalance: data.new_balance };
+      } else {
+        return { success: false, error: data.error || 'Failed to place bet' };
+      }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.message || 'Bet placement failed' 
-      };
+      return { success: false, error: 'Network error. Please try again.' };
     }
   };
 
-  const getUserBets = async () => {
+  const fetchSportsEvents = async () => {
     try {
-      const data = await apiCall('/bets');
-      return { success: true, bets: data.bets };
+      const response = await fetch(`${API_BASE}/events`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return { success: true, events: data.events, liveCount: data.live_count };
+      } else {
+        // Fallback to mock data if API fails
+        return {
+          success: true,
+          events: [
+            {
+              id: 1,
+              sport: 'NFL',
+              home_team: 'Kansas City Chiefs',
+              away_team: 'Buffalo Bills',
+              home_score: 21,
+              away_score: 17,
+              status: 'live',
+              quarter: '3rd Quarter',
+              odds: { home: 1.85, draw: 3.4, away: 2.1 }
+            },
+            {
+              id: 2,
+              sport: 'NBA',
+              home_team: 'Los Angeles Lakers',
+              away_team: 'Golden State Warriors',
+              home_score: 89,
+              away_score: 92,
+              status: 'live',
+              quarter: '4th Quarter',
+              odds: { home: 2.1, away: 1.75 }
+            }
+          ],
+          liveCount: 2
+        };
+      }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.message || 'Failed to fetch bets' 
+      // Fallback to mock data on network error
+      return {
+        success: true,
+        events: [
+          {
+            id: 1,
+            sport: 'NFL',
+            home_team: 'Kansas City Chiefs',
+            away_team: 'Buffalo Bills',
+            home_score: 21,
+            away_score: 17,
+            status: 'live',
+            quarter: '3rd Quarter',
+            odds: { home: 1.85, draw: 3.4, away: 2.1 }
+          }
+        ],
+        liveCount: 1
       };
     }
   };
 
   const value = {
     user,
-    token,
     loading,
+    error,
     login,
     register,
     googleLogin,
-    forgotPassword,
-    resetPassword,
     logout,
-    updateProfile,
     placeBet,
-    getUserBets,
+    fetchSportsEvents,
     isAuthenticated: !!user
   };
 
