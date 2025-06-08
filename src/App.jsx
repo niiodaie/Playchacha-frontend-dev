@@ -1,603 +1,580 @@
 import React, { useState, useEffect } from 'react';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { useAuth } from './contexts/AuthContext';
 import LoginModal from './components/LoginModal';
 import RegisterModal from './components/RegisterModal';
-import SportsPage from './components/SportsPage';
-import LivePage from './components/LivePage';
-import MyBetsPage from './components/MyBetsPage';
-import DemoModal from './components/DemoModal';
-import './App.css';
 
-// Main App Component with Working Navigation
-function AppContent() {
+function App() {
+  const { user, loading, fetchSportsEvents, placeBet, logout, isAuthenticated } = useAuth();
   const [currentPage, setCurrentPage] = useState('home');
   const [currentLanguage, setCurrentLanguage] = useState('en');
-  const [userLocation, setUserLocation] = useState(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showDemoModal, setShowDemoModal] = useState(false);
-  const [sportsData, setSportsData] = useState([]);
+  const [sportsEvents, setSportsEvents] = useState([]);
+  const [liveCount, setLiveCount] = useState(0);
+  const [betMessage, setBetMessage] = useState('');
 
-  // Get authentication state
-  const { user, logout, isAuthenticated, loading, placeBet } = useAuth();
-
-  // Sports events data with live updates
-  const defaultSportsEvents = [
-    {
-      id: 1,
-      sport: 'Football',
-      teams: ['Kansas City Chiefs', 'Buffalo Bills'],
-      scores: [21, 17],
-      time: '3rd Quarter',
-      status: 'LIVE',
-      league: 'NFL',
-      icon: '🏈',
-      odds: { home: 1.85, draw: 3.40, away: 2.10 }
-    },
-    {
-      id: 2,
-      sport: 'Basketball',
-      teams: ['Los Angeles Lakers', 'Golden State Warriors'],
-      scores: [89, 92],
-      time: '4th Quarter',
-      status: 'LIVE',
-      league: 'NBA',
-      icon: '🏀',
-      odds: { home: 2.10, away: 1.75 }
-    },
-    {
-      id: 3,
-      sport: 'Soccer',
-      teams: ['Real Madrid', 'FC Barcelona'],
-      scores: [2, 1],
-      time: '78\'',
-      status: 'LIVE',
-      league: 'La Liga',
-      icon: '⚽',
-      odds: { home: 1.95, draw: 3.20, away: 2.05 }
-    },
-    {
-      id: 4,
-      sport: 'Tennis',
-      teams: ['Novak Djokovic', 'Rafael Nadal'],
-      scores: ['6-4', '3-2'],
-      time: 'Set 2',
-      status: 'LIVE',
-      league: 'French Open',
-      icon: '🎾',
-      odds: { home: 1.65, away: 2.25 }
-    },
-    {
-      id: 5,
-      sport: 'Baseball',
-      teams: ['New York Yankees', 'Boston Red Sox'],
-      scores: [5, 3],
-      time: '7th Inning',
-      status: 'LIVE',
-      league: 'MLB',
-      icon: '⚾',
-      odds: { home: 1.90, away: 1.95 }
-    }
-  ];
-
-  // Fetch live sports data from backend
+  // Load sports events on component mount
   useEffect(() => {
-    const fetchSportsData = async () => {
-      try {
-        // For production, change to your Render backend URL
-        const response = await fetch('https://your-render-backend.onrender.com/api/events');
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch');
-        }
-        
-        const data = await response.json();
-        setSportsData(data.events || defaultSportsEvents);
-      } catch (error) {
-        console.error('Failed to fetch sports data:', error);
-        setSportsData(defaultSportsEvents);
-      }
-    };
-
-    fetchSportsData();
-    
-    // Refresh data every 30 seconds
-    const interval = setInterval(fetchSportsData, 30000);
-    return () => clearInterval(interval);
+    loadSportsEvents();
   }, []);
 
-  // Translations
-  const translations = {
-    en: {
-      title: 'Bet Against Real Users',
-      subtitle: 'Worldwide',
-      description: 'Peer-to-peer sports betting with secure escrow and instant payouts',
-      startBetting: 'Start Betting Now',
-      watchDemo: 'Watch Demo',
-      activeUsers: 'Active Users',
-      bettingVolume: 'Betting Volume',
-      winRate: 'Win Rate',
-      whyChoose: 'Why Choose PlayChaCha?',
-      futureOfBetting: 'The future of sports betting is here',
-      secureEscrow: 'Secure Escrow',
-      globalEvents: 'Global Events',
-      instantPayouts: 'Instant Payouts',
-      liveEvents: 'Live Events',
-      joinPools: 'Join active betting pools now',
-      joinBet: 'Join Bet',
-      placeBet: 'Place Bet',
-      sports: 'Sports',
-      live: 'Live',
-      myBets: 'My Bets',
-      login: 'Login',
-      logout: 'Logout',
-      welcome: 'Welcome',
-      dashboard: 'Dashboard',
-      home: 'Home'
-    },
-    es: {
-      title: 'Apuesta Contra Usuarios Reales',
-      subtitle: 'En Todo el Mundo',
-      description: 'Apuestas deportivas peer-to-peer con depósito seguro y pagos instantáneos',
-      startBetting: 'Comenzar a Apostar',
-      watchDemo: 'Ver Demo',
-      activeUsers: 'Usuarios Activos',
-      bettingVolume: 'Volumen de Apuestas',
-      winRate: 'Tasa de Ganancia',
-      whyChoose: '¿Por Qué Elegir PlayChaCha?',
-      futureOfBetting: 'El futuro de las apuestas deportivas está aquí',
-      secureEscrow: 'Depósito Seguro',
-      globalEvents: 'Eventos Globales',
-      instantPayouts: 'Pagos Instantáneos',
-      liveEvents: 'Eventos en Vivo',
-      joinPools: 'Únete a pools de apuestas activos ahora',
-      joinBet: 'Unirse a Apuesta',
-      placeBet: 'Hacer Apuesta',
-      sports: 'Deportes',
-      live: 'En Vivo',
-      myBets: 'Mis Apuestas',
-      login: 'Iniciar Sesión',
-      logout: 'Cerrar Sesión',
-      welcome: 'Bienvenido',
-      dashboard: 'Panel',
-      home: 'Inicio'
-    },
-    fr: {
-      title: 'Pariez Contre de Vrais Utilisateurs',
-      subtitle: 'Dans le Monde Entier',
-      description: 'Paris sportifs peer-to-peer avec séquestre sécurisé et paiements instantanés',
-      startBetting: 'Commencer à Parier',
-      watchDemo: 'Voir la Démo',
-      activeUsers: 'Utilisateurs Actifs',
-      bettingVolume: 'Volume de Paris',
-      winRate: 'Taux de Gain',
-      whyChoose: 'Pourquoi Choisir PlayChaCha?',
-      futureOfBetting: 'L\'avenir des paris sportifs est ici',
-      secureEscrow: 'Séquestre Sécurisé',
-      globalEvents: 'Événements Globaux',
-      instantPayouts: 'Paiements Instantanés',
-      liveEvents: 'Événements en Direct',
-      joinPools: 'Rejoignez les pools de paris actifs maintenant',
-      joinBet: 'Rejoindre le Pari',
-      placeBet: 'Placer un Pari',
-      sports: 'Sports',
-      live: 'En Direct',
-      myBets: 'Mes Paris',
-      login: 'Se Connecter',
-      logout: 'Se Déconnecter',
-      welcome: 'Bienvenue',
-      dashboard: 'Tableau de Bord',
-      home: 'Accueil'
-    },
-    de: {
-      title: 'Wetten Sie Gegen Echte Nutzer',
-      subtitle: 'Weltweit',
-      description: 'Peer-to-Peer Sportwetten mit sicherem Treuhand und sofortigen Auszahlungen',
-      startBetting: 'Jetzt Wetten',
-      watchDemo: 'Demo Ansehen',
-      activeUsers: 'Aktive Nutzer',
-      bettingVolume: 'Wettvolumen',
-      winRate: 'Gewinnrate',
-      whyChoose: 'Warum PlayChaCha Wählen?',
-      futureOfBetting: 'Die Zukunft der Sportwetten ist hier',
-      secureEscrow: 'Sicheres Treuhand',
-      globalEvents: 'Globale Events',
-      instantPayouts: 'Sofortige Auszahlungen',
-      liveEvents: 'Live Events',
-      joinPools: 'Treten Sie jetzt aktiven Wett-Pools bei',
-      joinBet: 'Wette Beitreten',
-      placeBet: 'Wette Platzieren',
-      sports: 'Sport',
-      live: 'Live',
-      myBets: 'Meine Wetten',
-      login: 'Anmelden',
-      logout: 'Abmelden',
-      welcome: 'Willkommen',
-      dashboard: 'Dashboard',
-      home: 'Startseite'
-    },
-    pt: {
-      title: 'Aposte Contra Usuários Reais',
-      subtitle: 'No Mundo Todo',
-      description: 'Apostas esportivas peer-to-peer com custódia segura e pagamentos instantâneos',
-      startBetting: 'Começar a Apostar',
-      watchDemo: 'Ver Demo',
-      activeUsers: 'Usuários Ativos',
-      bettingVolume: 'Volume de Apostas',
-      winRate: 'Taxa de Vitória',
-      whyChoose: 'Por Que Escolher PlayChaCha?',
-      futureOfBetting: 'O futuro das apostas esportivas está aqui',
-      secureEscrow: 'Custódia Segura',
-      globalEvents: 'Eventos Globais',
-      instantPayouts: 'Pagamentos Instantâneos',
-      liveEvents: 'Eventos ao Vivo',
-      joinPools: 'Junte-se a pools de apostas ativas agora',
-      joinBet: 'Participar da Aposta',
-      placeBet: 'Fazer Aposta',
-      sports: 'Esportes',
-      live: 'Ao Vivo',
-      myBets: 'Minhas Apostas',
-      login: 'Entrar',
-      logout: 'Sair',
-      welcome: 'Bem-vindo',
-      dashboard: 'Painel',
-      home: 'Início'
+  const loadSportsEvents = async () => {
+    const result = await fetchSportsEvents();
+    if (result.success) {
+      setSportsEvents(result.events);
+      setLiveCount(result.liveCount);
     }
   };
 
-  const t = (key) => translations[currentLanguage]?.[key] || translations.en[key];
-
-  // Navigation handler
-  const handleNavigation = (page) => {
-    if (page === 'myBets' && !isAuthenticated) {
-      setShowLoginModal(true);
-      return;
-    }
-    setCurrentPage(page);
-  };
-
-  // Geolocation detection
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setUserLocation({ latitude, longitude });
-          
-          // Simple language detection based on common regions
-          if (latitude > 35 && latitude < 42 && longitude > -9 && longitude < 3) {
-            setCurrentLanguage('es'); // Spain
-          } else if (latitude > 41 && latitude < 51 && longitude > -5 && longitude < 10) {
-            setCurrentLanguage('fr'); // France
-          } else if (latitude > 47 && latitude < 55 && longitude > 5 && longitude < 16) {
-            setCurrentLanguage('de'); // Germany
-          } else if (latitude > -34 && latitude < 5 && longitude > -74 && longitude < -34) {
-            setCurrentLanguage('pt'); // Brazil
-          }
-        },
-        (error) => {
-          console.log('Geolocation error:', error);
-        }
-      );
-    }
-  }, []);
-
-  // Handle bet placement
-  const handlePlaceBet = async (eventId, betType, odds) => {
+  const handleBetClick = async (event, betType) => {
     if (!isAuthenticated) {
       setShowLoginModal(true);
       return;
     }
 
-    try {
-      const betData = {
-        event_id: eventId,
-        bet_type: betType,
-        amount: 10, // Default amount, would be user input in real app
-        odds: odds
-      };
-
-      const result = await placeBet(betData);
-      
-      if (result.success) {
-        alert(`Bet placed successfully! ${betType} at ${odds} odds`);
-      } else {
-        alert(`Failed to place bet: ${result.error}`);
-      }
-    } catch (error) {
-      console.error('Failed to place bet:', error);
-      alert('Failed to place bet. Please try again.');
+    const amount = 10; // Default bet amount
+    const odds = event.odds[betType];
+    
+    const result = await placeBet(event.id, betType, amount, odds);
+    
+    if (result.success) {
+      setBetMessage(`Bet placed successfully! $${amount} on ${event.home_team} vs ${event.away_team}`);
+      setTimeout(() => setBetMessage(''), 3000);
+    } else {
+      setBetMessage(`Failed to place bet: ${result.error}`);
+      setTimeout(() => setBetMessage(''), 3000);
     }
   };
 
-  const eventsToShow = sportsData.length > 0 ? sportsData : defaultSportsEvents;
+  const translations = {
+    en: {
+      home: 'Home',
+      sports: 'Sports',
+      live: 'Live',
+      myBets: 'My Bets',
+      login: 'Login',
+      register: 'Register',
+      logout: 'Logout',
+      welcome: 'Welcome',
+      balance: 'Balance',
+      heroTitle: 'The Ultimate Sports Betting Experience',
+      heroSubtitle: 'Join millions of players worldwide and experience the thrill of live sports betting with real-time odds and instant payouts.',
+      startBetting: 'Start Betting Now',
+      watchDemo: 'Watch Demo',
+      liveEvents: 'Live Events',
+      viewAllSports: 'View All Sports',
+      featuresTitle: 'Why Choose PlayChaCha?',
+      feature1Title: 'Live Betting',
+      feature1Desc: 'Bet on live games with real-time odds',
+      feature2Title: 'Instant Payouts',
+      feature2Desc: 'Get your winnings instantly',
+      feature3Title: 'Global Sports',
+      feature3Desc: 'Bet on sports from around the world',
+      feature4Title: 'Secure Platform',
+      feature4Desc: 'Your money and data are always safe',
+      poweredBy: 'Powered by',
+      placeBet: 'Place Bet',
+      live: 'LIVE'
+    },
+    es: {
+      home: 'Inicio',
+      sports: 'Deportes',
+      live: 'En Vivo',
+      myBets: 'Mis Apuestas',
+      login: 'Iniciar Sesión',
+      register: 'Registrarse',
+      logout: 'Cerrar Sesión',
+      welcome: 'Bienvenido',
+      balance: 'Saldo',
+      heroTitle: 'La Experiencia Definitiva de Apuestas Deportivas',
+      heroSubtitle: 'Únete a millones de jugadores en todo el mundo y experimenta la emoción de las apuestas deportivas en vivo.',
+      startBetting: 'Comenzar a Apostar',
+      watchDemo: 'Ver Demo',
+      liveEvents: 'Eventos en Vivo',
+      viewAllSports: 'Ver Todos los Deportes',
+      featuresTitle: '¿Por Qué Elegir PlayChaCha?',
+      feature1Title: 'Apuestas en Vivo',
+      feature1Desc: 'Apuesta en juegos en vivo con cuotas en tiempo real',
+      feature2Title: 'Pagos Instantáneos',
+      feature2Desc: 'Recibe tus ganancias al instante',
+      feature3Title: 'Deportes Globales',
+      feature3Desc: 'Apuesta en deportes de todo el mundo',
+      feature4Title: 'Plataforma Segura',
+      feature4Desc: 'Tu dinero y datos siempre están seguros',
+      poweredBy: 'Desarrollado por',
+      placeBet: 'Apostar',
+      live: 'EN VIVO'
+    },
+    pt: {
+      home: 'Início',
+      sports: 'Esportes',
+      live: 'Ao Vivo',
+      myBets: 'Minhas Apostas',
+      login: 'Entrar',
+      register: 'Registrar',
+      logout: 'Sair',
+      welcome: 'Bem-vindo',
+      balance: 'Saldo',
+      heroTitle: 'A Experiência Definitiva em Apostas Esportivas',
+      heroSubtitle: 'Junte-se a milhões de jogadores em todo o mundo e experimente a emoção das apostas esportivas ao vivo.',
+      startBetting: 'Começar a Apostar',
+      watchDemo: 'Ver Demo',
+      liveEvents: 'Eventos ao Vivo',
+      viewAllSports: 'Ver Todos os Esportes',
+      featuresTitle: 'Por Que Escolher PlayChaCha?',
+      feature1Title: 'Apostas ao Vivo',
+      feature1Desc: 'Aposte em jogos ao vivo com odds em tempo real',
+      feature2Title: 'Pagamentos Instantâneos',
+      feature2Desc: 'Receba seus ganhos instantaneamente',
+      feature3Title: 'Esportes Globais',
+      feature3Desc: 'Aposte em esportes de todo o mundo',
+      feature4Title: 'Plataforma Segura',
+      feature4Desc: 'Seu dinheiro e dados estão sempre seguros',
+      poweredBy: 'Desenvolvido por',
+      placeBet: 'Apostar',
+      live: 'AO VIVO'
+    },
+    fr: {
+      home: 'Accueil',
+      sports: 'Sports',
+      live: 'En Direct',
+      myBets: 'Mes Paris',
+      login: 'Connexion',
+      register: 'S\'inscrire',
+      logout: 'Déconnexion',
+      welcome: 'Bienvenue',
+      balance: 'Solde',
+      heroTitle: 'L\'Expérience Ultime de Paris Sportifs',
+      heroSubtitle: 'Rejoignez des millions de joueurs dans le monde entier et vivez l\'excitation des paris sportifs en direct.',
+      startBetting: 'Commencer à Parier',
+      watchDemo: 'Voir la Démo',
+      liveEvents: 'Événements en Direct',
+      viewAllSports: 'Voir Tous les Sports',
+      featuresTitle: 'Pourquoi Choisir PlayChaCha?',
+      feature1Title: 'Paris en Direct',
+      feature1Desc: 'Pariez sur des jeux en direct avec des cotes en temps réel',
+      feature2Title: 'Paiements Instantanés',
+      feature2Desc: 'Recevez vos gains instantanément',
+      feature3Title: 'Sports Mondiaux',
+      feature3Desc: 'Pariez sur des sports du monde entier',
+      feature4Title: 'Plateforme Sécurisée',
+      feature4Desc: 'Votre argent et vos données sont toujours en sécurité',
+      poweredBy: 'Alimenté par',
+      placeBet: 'Placer un Pari',
+      live: 'EN DIRECT'
+    },
+    de: {
+      home: 'Startseite',
+      sports: 'Sport',
+      live: 'Live',
+      myBets: 'Meine Wetten',
+      login: 'Anmelden',
+      register: 'Registrieren',
+      logout: 'Abmelden',
+      welcome: 'Willkommen',
+      balance: 'Guthaben',
+      heroTitle: 'Das Ultimative Sportwetten-Erlebnis',
+      heroSubtitle: 'Schließen Sie sich Millionen von Spielern weltweit an und erleben Sie den Nervenkitzel von Live-Sportwetten.',
+      startBetting: 'Jetzt Wetten',
+      watchDemo: 'Demo Ansehen',
+      liveEvents: 'Live-Events',
+      viewAllSports: 'Alle Sportarten Anzeigen',
+      featuresTitle: 'Warum PlayChaCha Wählen?',
+      feature1Title: 'Live-Wetten',
+      feature1Desc: 'Setzen Sie auf Live-Spiele mit Echtzeit-Quoten',
+      feature2Title: 'Sofortige Auszahlungen',
+      feature2Desc: 'Erhalten Sie Ihre Gewinne sofort',
+      feature3Title: 'Globale Sportarten',
+      feature3Desc: 'Setzen Sie auf Sportarten aus der ganzen Welt',
+      feature4Title: 'Sichere Plattform',
+      feature4Desc: 'Ihr Geld und Ihre Daten sind immer sicher',
+      poweredBy: 'Unterstützt von',
+      placeBet: 'Wette Platzieren',
+      live: 'LIVE'
+    }
+  };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-2xl">Loading...</div>
+  const t = translations[currentLanguage];
+
+  const renderHomePage = () => (
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="hero-section">
+        <div className="hero-content">
+          <h1 className="hero-title">{t.heroTitle}</h1>
+          <p className="hero-subtitle">{t.heroSubtitle}</p>
+          <div className="hero-buttons">
+            <button 
+              className="btn-primary"
+              onClick={() => isAuthenticated ? setCurrentPage('sports') : setShowLoginModal(true)}
+            >
+              {t.startBetting}
+            </button>
+            <button 
+              className="btn-secondary"
+              onClick={() => setShowDemoModal(true)}
+            >
+              {t.watchDemo}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Bet Message */}
+      {betMessage && (
+        <div className="bet-message">
+          {betMessage}
+        </div>
+      )}
+
+      {/* Live Events Section */}
+      <section className="live-events-section">
+        <div className="section-header">
+          <h2>{t.liveEvents} <span className="live-badge">{liveCount} {t.live}</span></h2>
+          <button 
+            className="view-all-btn"
+            onClick={() => setCurrentPage('sports')}
+          >
+            {t.viewAllSports}
+          </button>
+        </div>
+        
+        <div className="events-grid">
+          {sportsEvents.slice(0, 3).map(event => (
+            <div key={event.id} className="event-card">
+              <div className="event-header">
+                <span className="sport-tag">{event.sport}</span>
+                <span className="live-indicator">{t.live}</span>
+              </div>
+              <div className="event-teams">
+                <div className="team">
+                  <span className="team-name">{event.home_team}</span>
+                  <span className="team-score">{event.home_score}</span>
+                </div>
+                <div className="vs">VS</div>
+                <div className="team">
+                  <span className="team-name">{event.away_team}</span>
+                  <span className="team-score">{event.away_score}</span>
+                </div>
+              </div>
+              <div className="event-status">{event.quarter}</div>
+              <div className="betting-odds">
+                <button 
+                  className="odds-btn"
+                  onClick={() => handleBetClick(event, 'home')}
+                >
+                  {event.home_team} {event.odds.home}
+                </button>
+                {event.odds.draw && (
+                  <button 
+                    className="odds-btn"
+                    onClick={() => handleBetClick(event, 'draw')}
+                  >
+                    Draw {event.odds.draw}
+                  </button>
+                )}
+                <button 
+                  className="odds-btn"
+                  onClick={() => handleBetClick(event, 'away')}
+                >
+                  {event.away_team} {event.odds.away}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="features-section">
+        <h2 className="features-title">{t.featuresTitle}</h2>
+        <div className="features-grid">
+          <div className="feature-card">
+            <div className="feature-icon">⚡</div>
+            <h3>{t.feature1Title}</h3>
+            <p>{t.feature1Desc}</p>
+          </div>
+          <div className="feature-card">
+            <div className="feature-icon">💰</div>
+            <h3>{t.feature2Title}</h3>
+            <p>{t.feature2Desc}</p>
+          </div>
+          <div className="feature-card">
+            <div className="feature-icon">🌍</div>
+            <h3>{t.feature3Title}</h3>
+            <p>{t.feature3Desc}</p>
+          </div>
+          <div className="feature-card">
+            <div className="feature-icon">🔒</div>
+            <h3>{t.feature4Title}</h3>
+            <p>{t.feature4Desc}</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Live Ticker */}
+      <div className="live-ticker">
+        <div className="ticker-content">
+          {sportsEvents.map(event => (
+            <span key={event.id} className="ticker-item">
+              {event.home_team} {event.home_score} - {event.away_score} {event.away_team} ({event.quarter})
+            </span>
+          ))}
+        </div>
       </div>
-    );
-  }
+    </div>
+  );
 
-  // Render different pages based on navigation
-  const renderPage = () => {
+  const renderSportsPage = () => (
+    <div className="sports-page">
+      <h1>Sports Betting</h1>
+      <div className="events-grid">
+        {sportsEvents.map(event => (
+          <div key={event.id} className="event-card">
+            <div className="event-header">
+              <span className="sport-tag">{event.sport}</span>
+              <span className="live-indicator">{t.live}</span>
+            </div>
+            <div className="event-teams">
+              <div className="team">
+                <span className="team-name">{event.home_team}</span>
+                <span className="team-score">{event.home_score}</span>
+              </div>
+              <div className="vs">VS</div>
+              <div className="team">
+                <span className="team-name">{event.away_team}</span>
+                <span className="team-score">{event.away_score}</span>
+              </div>
+            </div>
+            <div className="event-status">{event.quarter}</div>
+            <div className="betting-odds">
+              <button 
+                className="odds-btn"
+                onClick={() => handleBetClick(event, 'home')}
+              >
+                {event.home_team} {event.odds.home}
+              </button>
+              {event.odds.draw && (
+                <button 
+                  className="odds-btn"
+                  onClick={() => handleBetClick(event, 'draw')}
+                >
+                  Draw {event.odds.draw}
+                </button>
+              )}
+              <button 
+                className="odds-btn"
+                onClick={() => handleBetClick(event, 'away')}
+              >
+                {event.away_team} {event.odds.away}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderCurrentPage = () => {
     switch (currentPage) {
       case 'sports':
-        return <SportsPage events={eventsToShow} onPlaceBet={handlePlaceBet} t={t} />;
+        return renderSportsPage();
       case 'live':
-        return <LivePage events={eventsToShow} onPlaceBet={handlePlaceBet} t={t} />;
+        return renderSportsPage(); // Same as sports for now
       case 'myBets':
-        return <MyBetsPage t={t} />;
+        return (
+          <div className="my-bets-page">
+            <h1>{t.myBets}</h1>
+            {isAuthenticated ? (
+              <p>Your betting history will appear here.</p>
+            ) : (
+              <p>Please login to view your bets.</p>
+            )}
+          </div>
+        );
       default:
         return renderHomePage();
     }
   };
 
-  const renderHomePage = () => (
-    <>
-      {/* Hero Section */}
-      <section className="hero-section">
-        <h1 className="hero-title">
-          {t('title')} <span>{t('subtitle')}</span>
-        </h1>
-        <p className="hero-subtitle">{t('description')}</p>
-        
-        <div className="sports-icons">
-          <div className="sport-icon">🏈</div>
-          <div className="sport-icon">⚽</div>
-          <div className="sport-icon">🏀</div>
-          <div className="sport-icon">🎾</div>
-          <div className="sport-icon">⚾</div>
-        </div>
-        
-        <div className="action-buttons">
-          <button 
-            className="btn btn-primary"
-            onClick={() => isAuthenticated ? handleNavigation('sports') : setShowLoginModal(true)}
-          >
-            {t('startBetting')}
-          </button>
-          <button 
-            className="btn btn-secondary"
-            onClick={() => setShowDemoModal(true)}
-          >
-            {t('watchDemo')}
-          </button>
-        </div>
-      </section>
-      
-      {/* Live Events Section */}
-      <section id="live-events" className="live-events">
-        <h2 className="section-title">
-          <span className="live-indicator"></span> {t('liveEvents')}
-        </h2>
-        
-        {eventsToShow.slice(0, 3).map((event) => (
-          <div key={event.id} className="event-card">
-            <div className="event-header">
-              <span className="event-league">{event.icon} {event.league}</span>
-              <span className="event-time">{event.status}</span>
-            </div>
-            <div className="event-teams">{event.teams[0]} vs {event.teams[1]}</div>
-            <div className="event-score">
-              {event.sport === 'Tennis' ? 
-                event.scores.join(', ') : 
-                `${event.scores[0]} - ${event.scores[1]}`
-              }
-            </div>
-            <div className="betting-odds">
-              <button 
-                className="odds-button"
-                onClick={() => handlePlaceBet(event.id, 'home', event.odds?.home || 1.85)}
-              >
-                <div>{event.teams[0]}</div>
-                <div className="odds-value">{event.odds?.home || '1.85'}</div>
-              </button>
-              {event.odds?.draw && (
-                <button 
-                  className="odds-button"
-                  onClick={() => handlePlaceBet(event.id, 'draw', event.odds.draw)}
-                >
-                  <div>Draw</div>
-                  <div className="odds-value">{event.odds.draw}</div>
-                </button>
-              )}
-              <button 
-                className="odds-button"
-                onClick={() => handlePlaceBet(event.id, 'away', event.odds?.away || 2.10)}
-              >
-                <div>{event.teams[1]}</div>
-                <div className="odds-value">{event.odds?.away || '2.10'}</div>
-              </button>
-            </div>
-          </div>
-        ))}
-        
-        <div className="view-all-container">
-          <button 
-            className="btn btn-outline"
-            onClick={() => handleNavigation('sports')}
-          >
-            View All Sports
-          </button>
-        </div>
-      </section>
-      
-      {/* Live Ticker */}
-      <div className="live-ticker">
-        <div className="ticker-content">
-          {eventsToShow.map((event) => (
-            <div key={event.id} className="ticker-item">
-              {event.icon} {event.teams[0]} {event.scores[0]} - {event.scores[1]} {event.teams[1]} • {event.time}
-            </div>
-          ))}
-        </div>
+  if (loading) {
+    return (
+      <div className="loading-screen">
+        <div className="loading-spinner"></div>
+        <p>Loading PlayChaCha...</p>
       </div>
-      
-      {/* Features Section */}
-      <section className="features-section">
-        <h2 className="section-title">{t('whyChoose')}</h2>
-        <div className="features-grid">
-          <div className="feature-card">
-            <div className="feature-icon">🔒</div>
-            <h3>{t('secureEscrow')}</h3>
-            <p>Advanced encryption and secure escrow system protecting all transactions</p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-icon">🌎</div>
-            <h3>{t('globalEvents')}</h3>
-            <p>Access to thousands of sporting events from around the world</p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-icon">⚡</div>
-            <h3>{t('instantPayouts')}</h3>
-            <p>Receive your winnings instantly with our lightning-fast payment system</p>
-          </div>
-        </div>
-      </section>
-      
-      {/* Stats Section */}
-      <section className="stats-section">
-        <div className="stats-grid">
-          <div className="stat-card">
-            <div className="stat-value">1.2M+</div>
-            <div className="stat-label">{t('activeUsers')}</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-value">$50M+</div>
-            <div className="stat-label">{t('bettingVolume')}</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-value">94.7%</div>
-            <div className="stat-label">{t('winRate')}</div>
-          </div>
-        </div>
-      </section>
-    </>
-  );
+    );
+  }
 
   return (
     <div className="App">
       {/* Header */}
       <header className="header">
-        <div className="header-container">
+        <div className="header-content">
           <button 
             className="logo"
-            onClick={() => handleNavigation('home')}
+            onClick={() => setCurrentPage('home')}
           >
-            PlayChaCha
+            PlayChaCha.net
           </button>
-          <nav className="nav-links">
+          
+          <nav className="nav">
             <button 
               className={`nav-link ${currentPage === 'home' ? 'active' : ''}`}
-              onClick={() => handleNavigation('home')}
+              onClick={() => setCurrentPage('home')}
             >
-              {t('home')}
+              {t.home}
             </button>
             <button 
               className={`nav-link ${currentPage === 'sports' ? 'active' : ''}`}
-              onClick={() => handleNavigation('sports')}
+              onClick={() => setCurrentPage('sports')}
             >
-              {t('sports')}
+              {t.sports}
             </button>
             <button 
               className={`nav-link ${currentPage === 'live' ? 'active' : ''}`}
-              onClick={() => handleNavigation('live')}
+              onClick={() => setCurrentPage('live')}
             >
-              {t('live')}
+              {t.live}
             </button>
-            {isAuthenticated && (
-              <button 
-                className={`nav-link ${currentPage === 'myBets' ? 'active' : ''}`}
-                onClick={() => handleNavigation('myBets')}
-              >
-                {t('myBets')}
-              </button>
-            )}
+            <button 
+              className={`nav-link ${currentPage === 'myBets' ? 'active' : ''}`}
+              onClick={() => setCurrentPage('myBets')}
+            >
+              {t.myBets}
+            </button>
+          </nav>
+
+          <div className="header-actions">
             <select 
-              value={currentLanguage} 
-              onChange={(e) => setCurrentLanguage(e.target.value)}
               className="language-selector"
+              value={currentLanguage}
+              onChange={(e) => setCurrentLanguage(e.target.value)}
             >
               <option value="en">🇺🇸 EN</option>
               <option value="es">🇪🇸 ES</option>
+              <option value="pt">🇧🇷 PT</option>
               <option value="fr">🇫🇷 FR</option>
               <option value="de">🇩🇪 DE</option>
-              <option value="pt">🇧🇷 PT</option>
             </select>
-            
+
             {isAuthenticated ? (
               <div className="user-menu">
-                <span className="welcome-text">{t('welcome')}, {user?.name}</span>
-                <button onClick={logout} className="logout-btn">{t('logout')}</button>
+                <span className="welcome-text">
+                  {t.welcome}, {user?.name || user?.email}
+                </span>
+                <span className="balance-text">
+                  {t.balance}: ${user?.balance?.toFixed(2) || '0.00'}
+                </span>
+                <button 
+                  className="logout-btn"
+                  onClick={logout}
+                >
+                  {t.logout}
+                </button>
               </div>
             ) : (
-              <button 
-                onClick={() => setShowLoginModal(true)} 
-                className="login-btn"
-              >
-                {t('login')}
-              </button>
+              <div className="auth-buttons">
+                <button 
+                  className="login-btn"
+                  onClick={() => setShowLoginModal(true)}
+                >
+                  {t.login}
+                </button>
+                <button 
+                  className="register-btn"
+                  onClick={() => setShowRegisterModal(true)}
+                >
+                  {t.register}
+                </button>
+              </div>
             )}
-          </nav>
+          </div>
         </div>
       </header>
 
-      <main className="main-content">
-        {renderPage()}
+      {/* Main Content */}
+      <main>
+        {renderCurrentPage()}
       </main>
-      
+
+      {/* Footer */}
       <footer className="footer">
         <div className="footer-content">
-          <div className="footer-links">
-            <button className="footer-link">About Us</button>
-            <button className="footer-link">Terms of Service</button>
-            <button className="footer-link">Privacy Policy</button>
-            <button className="footer-link">Contact</button>
+          <div className="footer-section">
+            <h3>PlayChaCha.net</h3>
+            <p>The ultimate sports betting experience</p>
           </div>
-          <div className="footer-bottom">
-            <p>© 2025 PlayChaCha. All rights reserved.</p>
-            <p className="visnec-branding">
-              Powered by <a href="https://visnec.com" className="visnec-link" target="_blank" rel="noopener noreferrer">Visnec</a>
-            </p>
+          <div className="footer-section">
+            <h4>Quick Links</h4>
+            <button onClick={() => setCurrentPage('sports')}>Sports</button>
+            <button onClick={() => setCurrentPage('live')}>Live Betting</button>
+            <button onClick={() => setCurrentPage('myBets')}>My Bets</button>
+          </div>
+          <div className="footer-section">
+            <h4>Support</h4>
+            <button>Help Center</button>
+            <button>Contact Us</button>
+            <button>Terms of Service</button>
+          </div>
+          <div className="footer-section">
+            <p>{t.poweredBy} <a href="https://visnec.com" target="_blank" rel="noopener noreferrer">Visnec</a></p>
           </div>
         </div>
       </footer>
 
       {/* Modals */}
-      <LoginModal
-        isOpen={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
-        onSwitchToRegister={() => {
-          setShowLoginModal(false);
-          setShowRegisterModal(true);
-        }}
-      />
-      
-      <RegisterModal
-        isOpen={showRegisterModal}
-        onClose={() => setShowRegisterModal(false)}
-        onSwitchToLogin={() => {
-          setShowRegisterModal(false);
-          setShowLoginModal(true);
-        }}
-      />
+      {showLoginModal && (
+        <LoginModal 
+          onClose={() => setShowLoginModal(false)}
+          onSwitchToRegister={() => {
+            setShowLoginModal(false);
+            setShowRegisterModal(true);
+          }}
+        />
+      )}
 
-      <DemoModal
-        isOpen={showDemoModal}
-        onClose={() => setShowDemoModal(false)}
-      />
+      {showRegisterModal && (
+        <RegisterModal 
+          onClose={() => setShowRegisterModal(false)}
+          onSwitchToLogin={() => {
+            setShowRegisterModal(false);
+            setShowLoginModal(true);
+          }}
+        />
+      )}
+
+      {showDemoModal && (
+        <div className="modal-overlay" onClick={() => setShowDemoModal(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <h2>PlayChaCha Demo</h2>
+            <p>Welcome to PlayChaCha! Here's how to get started:</p>
+            <ul>
+              <li>1. Register or login to your account</li>
+              <li>2. Browse live sports events</li>
+              <li>3. Click on odds to place bets</li>
+              <li>4. Watch your winnings grow!</li>
+            </ul>
+            <button 
+              className="btn-primary"
+              onClick={() => {
+                setShowDemoModal(false);
+                setShowRegisterModal(true);
+              }}
+            >
+              Get Started
+            </button>
+            <button 
+              className="btn-secondary"
+              onClick={() => setShowDemoModal(false)}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
-  );
-}
-
-// Main App Component with AuthProvider
-function App() {
-  return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
   );
 }
 
