@@ -1,172 +1,162 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
-const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  
-  const { register, googleLogin } = useAuth();
+const RegisterModal = ({ onClose, onSwitchToLogin }) => {
+  const { register, loading, error } = useAuth();
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const [formError, setFormError] = useState('');
+
+  const validatePassword = (password) => {
+    if (password.length < 6) {
+      return 'Password must be at least 6 characters long';
+    }
+    return '';
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
+    setFormError('');
 
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      setLoading(false);
+    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
+      setFormError('Please fill in all fields');
       return;
     }
 
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters long');
-      setLoading(false);
+    if (formData.password !== formData.confirmPassword) {
+      setFormError('Passwords do not match');
       return;
     }
 
-    const result = await register(name, email, password);
+    const passwordError = validatePassword(formData.password);
+    if (passwordError) {
+      setFormError(passwordError);
+      return;
+    }
+
+    const result = await register(formData.email, formData.password, formData.name);
     
     if (result.success) {
       onClose();
-      setName('');
-      setEmail('');
-      setPassword('');
-      setConfirmPassword('');
     } else {
-      setError(result.error);
-    }
-    
-    setLoading(false);
-  };
-
-  const handleGoogleLogin = async () => {
-    try {
-      const mockGoogleToken = 'demo-google-token-' + Date.now();
-      const result = await googleLogin(mockGoogleToken);
-      
-      if (result.success) {
-        onClose();
-      } else {
-        setError(result.error);
-      }
-    } catch (error) {
-      setError('Google login failed');
+      setFormError(result.error);
     }
   };
 
-  if (!isOpen) return null;
+  const handleGoogleRegister = async () => {
+    // Simulate Google registration for demo
+    const result = await register('demo@google.com', 'demo123', 'Google User');
+    if (result.success) {
+      onClose();
+    }
+  };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Create Account</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl"
-          >
-            ×
-          </button>
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>Join PlayChaCha</h2>
+          <button className="close-btn" onClick={onClose}>×</button>
         </div>
 
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-            {error}
-          </div>
-        )}
+        <form onSubmit={handleSubmit} className="auth-form">
+          {(formError || error) && (
+            <div className="error-message">
+              {formError || error}
+            </div>
+          )}
 
-        <button
-          onClick={handleGoogleLogin}
-          className="w-full mb-4 bg-red-600 text-white py-3 px-4 rounded-md hover:bg-red-700 flex items-center justify-center font-medium"
-        >
-          <span className="mr-2">🔍</span>
-          Continue with Google
-        </button>
-
-        <div className="text-center mb-4 text-gray-500">or</div>
-
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Full Name
-            </label>
+          <div className="form-group">
+            <label htmlFor="name">Full Name</label>
             <input
               type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              id="name"
+              value={formData.name}
+              onChange={(e) => setFormData({...formData, name: e.target.value})}
+              placeholder="Enter your full name"
               required
             />
           </div>
 
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Email Address
-            </label>
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
             <input
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              id="email"
+              value={formData.email}
+              onChange={(e) => setFormData({...formData, email: e.target.value})}
+              placeholder="Enter your email"
               required
             />
           </div>
 
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Password
-            </label>
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
             <input
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              id="password"
+              value={formData.password}
+              onChange={(e) => setFormData({...formData, password: e.target.value})}
+              placeholder="Create a password (min 6 characters)"
               required
-              minLength={8}
             />
-            <p className="text-xs text-gray-500 mt-1">
-              Must be at least 8 characters with uppercase, lowercase, number, and special character
-            </p>
           </div>
 
-          <div className="mb-6">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Confirm Password
-            </label>
+          <div className="form-group">
+            <label htmlFor="confirmPassword">Confirm Password</label>
             <input
               type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              id="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+              placeholder="Confirm your password"
               required
             />
           </div>
 
-          <button
-            type="submit"
+          <button 
+            type="submit" 
+            className="btn-primary full-width"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 font-medium"
           >
             {loading ? 'Creating Account...' : 'Create Account'}
           </button>
-        </form>
 
-        <div className="mt-6 text-center">
-          <span className="text-gray-600">Already have an account? </span>
-          <button
-            onClick={onSwitchToLogin}
-            className="text-blue-600 hover:text-blue-800 font-medium"
+          <div className="divider">
+            <span>or</span>
+          </div>
+
+          <button 
+            type="button"
+            className="btn-google"
+            onClick={handleGoogleRegister}
+            disabled={loading}
           >
-            Sign in
+            <span className="google-icon">G</span>
+            Sign up with Google
           </button>
-        </div>
+
+          <div className="auth-switch">
+            <p>
+              Already have an account?{' '}
+              <button 
+                type="button"
+                className="link-btn"
+                onClick={onSwitchToLogin}
+              >
+                Login here
+              </button>
+            </p>
+          </div>
+        </form>
       </div>
     </div>
   );
 };
 
 export default RegisterModal;
+
