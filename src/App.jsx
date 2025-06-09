@@ -1,8 +1,458 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from './contexts/AuthContext';
-import LoginModal from './components/LoginModal';
-import RegisterModal from './components/RegisterModal';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 
+// AuthContext integrated directly into App.jsx to avoid import issues
+const AuthContext = createContext();
+
+const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+
+// AuthProvider component
+const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Live backend API URL
+  const API_BASE = 'https://48xhpiqc8wkx.manus.space/api';
+
+  // Check for existing token on app load
+  useEffect(() => {
+    const token = localStorage.getItem('playchacha_token');
+    if (token) {
+      fetchUserProfile(token);
+    } else {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchUserProfile = async (token) => {
+    try {
+      const response = await fetch(`${API_BASE}/user/profile`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.user);
+        localStorage.setItem('playchacha_token', token);
+      } else {
+        localStorage.removeItem('playchacha_token');
+        setUser(null);
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      localStorage.removeItem('playchacha_token');
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const login = async (email, password) => {
+    try {
+      setError(null);
+      setLoading(true);
+
+      const response = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setUser(data.user);
+        localStorage.setItem('playchacha_token', data.token);
+        return { success: true, user: data.user };
+      } else {
+        setError(data.error || 'Login failed');
+        return { success: false, error: data.error || 'Login failed' };
+      }
+    } catch (error) {
+      const errorMessage = 'Network error. Please check your connection.';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const register = async (email, password, name) => {
+    try {
+      setError(null);
+      setLoading(true);
+
+      const response = await fetch(`${API_BASE}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password, name }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setUser(data.user);
+        localStorage.setItem('playchacha_token', data.token);
+        return { success: true, user: data.user };
+      } else {
+        setError(data.error || 'Registration failed');
+        return { success: false, error: data.error || 'Registration failed' };
+      }
+    } catch (error) {
+      const errorMessage = 'Network error. Please check your connection.';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem('playchacha_token');
+    setError(null);
+  };
+
+  const placeBet = async (eventId, betType, amount, odds) => {
+    try {
+      const token = localStorage.getItem('playchacha_token');
+      if (!token) {
+        return { success: false, error: 'Please login to place bets' };
+      }
+
+      const response = await fetch(`${API_BASE}/bets`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          event_id: eventId,
+          bet_type: betType,
+          amount: amount,
+          odds: odds
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setUser(prev => ({
+          ...prev,
+          balance: data.new_balance
+        }));
+        return { success: true, bet: data.bet, newBalance: data.new_balance };
+      } else {
+        return { success: false, error: data.error || 'Failed to place bet' };
+      }
+    } catch (error) {
+      return { success: false, error: 'Network error. Please try again.' };
+    }
+  };
+
+  const fetchSportsEvents = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/events`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return { success: true, events: data.events, liveCount: data.live_count };
+      } else {
+        return getFallbackEvents();
+      }
+    } catch (error) {
+      return getFallbackEvents();
+    }
+  };
+
+  const getFallbackEvents = () => ({
+    success: true,
+    events: [
+      {
+        id: 1,
+        sport: 'NFL',
+        home_team: 'Kansas City Chiefs',
+        away_team: 'Buffalo Bills',
+        home_score: 21,
+        away_score: 17,
+        status: 'live',
+        quarter: '3rd Quarter',
+        odds: { home: 1.85, draw: 3.4, away: 2.1 }
+      },
+      {
+        id: 2,
+        sport: 'NBA',
+        home_team: 'Los Angeles Lakers',
+        away_team: 'Golden State Warriors',
+        home_score: 89,
+        away_score: 92,
+        status: 'live',
+        quarter: '4th Quarter',
+        odds: { home: 2.1, away: 1.75 }
+      }
+    ],
+    liveCount: 2
+  });
+
+  const value = {
+    user,
+    loading,
+    error,
+    login,
+    register,
+    logout,
+    placeBet,
+    fetchSportsEvents,
+    isAuthenticated: !!user
+  };
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+// LoginModal component
+const LoginModal = ({ onClose, onSwitchToRegister }) => {
+  const { login, loading, error } = useAuth();
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
+  const [formError, setFormError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setFormError('');
+
+    if (!formData.email || !formData.password) {
+      setFormError('Please fill in all fields');
+      return;
+    }
+
+    const result = await login(formData.email, formData.password);
+    
+    if (result.success) {
+      onClose();
+    } else {
+      setFormError(result.error);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>Login to PlayChaCha</h2>
+          <button className="close-btn" onClick={onClose}>×</button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="auth-form">
+          {(formError || error) && (
+            <div className="error-message">
+              {formError || error}
+            </div>
+          )}
+
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              value={formData.email}
+              onChange={(e) => setFormData({...formData, email: e.target.value})}
+              placeholder="Enter your email"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              value={formData.password}
+              onChange={(e) => setFormData({...formData, password: e.target.value})}
+              placeholder="Enter your password"
+              required
+            />
+          </div>
+
+          <button 
+            type="submit" 
+            className="btn-primary full-width"
+            disabled={loading}
+          >
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
+
+          <div className="auth-switch">
+            <p>
+              Don't have an account?{' '}
+              <button 
+                type="button"
+                className="link-btn"
+                onClick={onSwitchToRegister}
+              >
+                Register here
+              </button>
+            </p>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// RegisterModal component
+const RegisterModal = ({ onClose, onSwitchToLogin }) => {
+  const { register, loading, error } = useAuth();
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const [formError, setFormError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setFormError('');
+
+    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
+      setFormError('Please fill in all fields');
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setFormError('Passwords do not match');
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setFormError('Password must be at least 6 characters long');
+      return;
+    }
+
+    const result = await register(formData.email, formData.password, formData.name);
+    
+    if (result.success) {
+      onClose();
+    } else {
+      setFormError(result.error);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>Join PlayChaCha</h2>
+          <button className="close-btn" onClick={onClose}>×</button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="auth-form">
+          {(formError || error) && (
+            <div className="error-message">
+              {formError || error}
+            </div>
+          )}
+
+          <div className="form-group">
+            <label htmlFor="name">Full Name</label>
+            <input
+              type="text"
+              id="name"
+              value={formData.name}
+              onChange={(e) => setFormData({...formData, name: e.target.value})}
+              placeholder="Enter your full name"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              value={formData.email}
+              onChange={(e) => setFormData({...formData, email: e.target.value})}
+              placeholder="Enter your email"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              value={formData.password}
+              onChange={(e) => setFormData({...formData, password: e.target.value})}
+              placeholder="Create a password (min 6 characters)"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="confirmPassword">Confirm Password</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+              placeholder="Confirm your password"
+              required
+            />
+          </div>
+
+          <button 
+            type="submit" 
+            className="btn-primary full-width"
+            disabled={loading}
+          >
+            {loading ? 'Creating Account...' : 'Create Account'}
+          </button>
+
+          <div className="auth-switch">
+            <p>
+              Already have an account?{' '}
+              <button 
+                type="button"
+                className="link-btn"
+                onClick={onSwitchToLogin}
+              >
+                Login here
+              </button>
+            </p>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// Main App component
 function App() {
   const { user, loading, fetchSportsEvents, placeBet, logout, isAuthenticated } = useAuth();
   const [currentPage, setCurrentPage] = useState('home');
@@ -75,122 +525,6 @@ function App() {
       feature4Desc: 'Your money and data are always safe',
       poweredBy: 'Powered by',
       placeBet: 'Place Bet',
-      live: 'LIVE'
-    },
-    es: {
-      home: 'Inicio',
-      sports: 'Deportes',
-      live: 'En Vivo',
-      myBets: 'Mis Apuestas',
-      login: 'Iniciar Sesión',
-      register: 'Registrarse',
-      logout: 'Cerrar Sesión',
-      welcome: 'Bienvenido',
-      balance: 'Saldo',
-      heroTitle: 'La Experiencia Definitiva de Apuestas Deportivas',
-      heroSubtitle: 'Únete a millones de jugadores en todo el mundo y experimenta la emoción de las apuestas deportivas en vivo.',
-      startBetting: 'Comenzar a Apostar',
-      watchDemo: 'Ver Demo',
-      liveEvents: 'Eventos en Vivo',
-      viewAllSports: 'Ver Todos los Deportes',
-      featuresTitle: '¿Por Qué Elegir PlayChaCha?',
-      feature1Title: 'Apuestas en Vivo',
-      feature1Desc: 'Apuesta en juegos en vivo con cuotas en tiempo real',
-      feature2Title: 'Pagos Instantáneos',
-      feature2Desc: 'Recibe tus ganancias al instante',
-      feature3Title: 'Deportes Globales',
-      feature3Desc: 'Apuesta en deportes de todo el mundo',
-      feature4Title: 'Plataforma Segura',
-      feature4Desc: 'Tu dinero y datos siempre están seguros',
-      poweredBy: 'Desarrollado por',
-      placeBet: 'Apostar',
-      live: 'EN VIVO'
-    },
-    pt: {
-      home: 'Início',
-      sports: 'Esportes',
-      live: 'Ao Vivo',
-      myBets: 'Minhas Apostas',
-      login: 'Entrar',
-      register: 'Registrar',
-      logout: 'Sair',
-      welcome: 'Bem-vindo',
-      balance: 'Saldo',
-      heroTitle: 'A Experiência Definitiva em Apostas Esportivas',
-      heroSubtitle: 'Junte-se a milhões de jogadores em todo o mundo e experimente a emoção das apostas esportivas ao vivo.',
-      startBetting: 'Começar a Apostar',
-      watchDemo: 'Ver Demo',
-      liveEvents: 'Eventos ao Vivo',
-      viewAllSports: 'Ver Todos os Esportes',
-      featuresTitle: 'Por Que Escolher PlayChaCha?',
-      feature1Title: 'Apostas ao Vivo',
-      feature1Desc: 'Aposte em jogos ao vivo com odds em tempo real',
-      feature2Title: 'Pagamentos Instantâneos',
-      feature2Desc: 'Receba seus ganhos instantaneamente',
-      feature3Title: 'Esportes Globais',
-      feature3Desc: 'Aposte em esportes de todo o mundo',
-      feature4Title: 'Plataforma Segura',
-      feature4Desc: 'Seu dinheiro e dados estão sempre seguros',
-      poweredBy: 'Desenvolvido por',
-      placeBet: 'Apostar',
-      live: 'AO VIVO'
-    },
-    fr: {
-      home: 'Accueil',
-      sports: 'Sports',
-      live: 'En Direct',
-      myBets: 'Mes Paris',
-      login: 'Connexion',
-      register: 'S\'inscrire',
-      logout: 'Déconnexion',
-      welcome: 'Bienvenue',
-      balance: 'Solde',
-      heroTitle: 'L\'Expérience Ultime de Paris Sportifs',
-      heroSubtitle: 'Rejoignez des millions de joueurs dans le monde entier et vivez l\'excitation des paris sportifs en direct.',
-      startBetting: 'Commencer à Parier',
-      watchDemo: 'Voir la Démo',
-      liveEvents: 'Événements en Direct',
-      viewAllSports: 'Voir Tous les Sports',
-      featuresTitle: 'Pourquoi Choisir PlayChaCha?',
-      feature1Title: 'Paris en Direct',
-      feature1Desc: 'Pariez sur des jeux en direct avec des cotes en temps réel',
-      feature2Title: 'Paiements Instantanés',
-      feature2Desc: 'Recevez vos gains instantanément',
-      feature3Title: 'Sports Mondiaux',
-      feature3Desc: 'Pariez sur des sports du monde entier',
-      feature4Title: 'Plateforme Sécurisée',
-      feature4Desc: 'Votre argent et vos données sont toujours en sécurité',
-      poweredBy: 'Alimenté par',
-      placeBet: 'Placer un Pari',
-      live: 'EN DIRECT'
-    },
-    de: {
-      home: 'Startseite',
-      sports: 'Sport',
-      live: 'Live',
-      myBets: 'Meine Wetten',
-      login: 'Anmelden',
-      register: 'Registrieren',
-      logout: 'Abmelden',
-      welcome: 'Willkommen',
-      balance: 'Guthaben',
-      heroTitle: 'Das Ultimative Sportwetten-Erlebnis',
-      heroSubtitle: 'Schließen Sie sich Millionen von Spielern weltweit an und erleben Sie den Nervenkitzel von Live-Sportwetten.',
-      startBetting: 'Jetzt Wetten',
-      watchDemo: 'Demo Ansehen',
-      liveEvents: 'Live-Events',
-      viewAllSports: 'Alle Sportarten Anzeigen',
-      featuresTitle: 'Warum PlayChaCha Wählen?',
-      feature1Title: 'Live-Wetten',
-      feature1Desc: 'Setzen Sie auf Live-Spiele mit Echtzeit-Quoten',
-      feature2Title: 'Sofortige Auszahlungen',
-      feature2Desc: 'Erhalten Sie Ihre Gewinne sofort',
-      feature3Title: 'Globale Sportarten',
-      feature3Desc: 'Setzen Sie auf Sportarten aus der ganzen Welt',
-      feature4Title: 'Sichere Plattform',
-      feature4Desc: 'Ihr Geld und Ihre Daten sind immer sicher',
-      poweredBy: 'Unterstützt von',
-      placeBet: 'Wette Platzieren',
       live: 'LIVE'
     }
   };
@@ -381,7 +715,7 @@ function App() {
       case 'sports':
         return renderSportsPage();
       case 'live':
-        return renderSportsPage(); // Same as sports for now
+        return renderSportsPage();
       case 'myBets':
         return (
           <div className="my-bets-page">
@@ -453,10 +787,6 @@ function App() {
               onChange={(e) => setCurrentLanguage(e.target.value)}
             >
               <option value="en">🇺🇸 EN</option>
-              <option value="es">🇪🇸 ES</option>
-              <option value="pt">🇧🇷 PT</option>
-              <option value="fr">🇫🇷 FR</option>
-              <option value="de">🇩🇪 DE</option>
             </select>
 
             {isAuthenticated ? (
@@ -578,5 +908,12 @@ function App() {
   );
 }
 
-export default App;
+// Export the App wrapped with AuthProvider
+export default function AppWithProvider() {
+  return (
+    <AuthProvider>
+      <App />
+    </AuthProvider>
+  );
+}
 
