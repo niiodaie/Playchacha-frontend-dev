@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 
-// Inline CSS styles to ensure they load
-const styles = `
+// Enhanced inline CSS with social media and new features
+const enhancedStyles = `
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 * {
@@ -24,6 +24,7 @@ body {
   flex-direction: column;
 }
 
+/* Header Styles */
 .header {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
@@ -157,6 +158,44 @@ body {
   box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
 }
 
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.welcome-text {
+  color: #555;
+  font-weight: 500;
+}
+
+.balance-text {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.logout-btn {
+  padding: 0.5rem 1rem;
+  background: #ff4757;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+  background: #ff3742;
+  transform: translateY(-1px);
+}
+
+/* Hero Section with Enhanced CTAs */
 .hero-section {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -164,6 +203,17 @@ body {
   text-align: center;
   position: relative;
   overflow: hidden;
+}
+
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="rgba(255,255,255,0.05)" points="0,1000 1000,0 1000,1000"/></svg>');
+  background-size: cover;
 }
 
 .hero-content {
@@ -186,9 +236,34 @@ body {
 
 .hero-subtitle {
   font-size: 1.3rem;
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
   opacity: 0.9;
   line-height: 1.6;
+}
+
+.hero-stats {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 3rem;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-number {
+  display: block;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.9rem;
+  opacity: 0.8;
 }
 
 .hero-buttons {
@@ -196,6 +271,7 @@ body {
   gap: 1.5rem;
   justify-content: center;
   flex-wrap: wrap;
+  margin-bottom: 2rem;
 }
 
 .btn-primary, .btn-secondary {
@@ -208,6 +284,8 @@ body {
   transition: all 0.3s ease;
   text-decoration: none;
   display: inline-block;
+  position: relative;
+  overflow: hidden;
 }
 
 .btn-primary {
@@ -233,6 +311,73 @@ body {
   transform: translateY(-3px);
 }
 
+.social-proof {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  opacity: 0.8;
+  flex-wrap: wrap;
+}
+
+.social-proof-text {
+  font-size: 0.9rem;
+}
+
+.trust-badges {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.trust-badge {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.3rem 0.8rem;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Video Modal */
+.video-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  padding: 2rem;
+}
+
+.video-content {
+  position: relative;
+  max-width: 800px;
+  width: 100%;
+}
+
+.video-player {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+
+.video-close {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 2rem;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+/* Enhanced Live Events Section */
 .live-events-section {
   padding: 4rem 2rem;
   background: rgba(255, 255, 255, 0.95);
@@ -289,6 +434,7 @@ body {
   box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
 }
 
+/* Events Grid */
 .events-grid {
   max-width: 1200px;
   margin: 0 auto;
@@ -404,6 +550,88 @@ body {
   box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
 }
 
+/* User Guide Section */
+.user-guide-section {
+  padding: 4rem 2rem;
+  background: #f8f9fa;
+}
+
+.guide-content {
+  max-width: 1000px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.guide-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 2rem;
+}
+
+.guide-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.guide-step {
+  background: white;
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.guide-step:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.step-number {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 1.2rem;
+  line-height: 40px;
+  margin-bottom: 1rem;
+}
+
+.step-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.step-description {
+  color: #666;
+  line-height: 1.6;
+}
+
+.guide-cta {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.guide-cta:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+}
+
+/* Features Section */
 .features-section {
   padding: 4rem 2rem;
   background: white;
@@ -456,6 +684,110 @@ body {
   line-height: 1.6;
 }
 
+/* Social Media Section */
+.social-section {
+  padding: 4rem 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-align: center;
+}
+
+.social-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.social-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.social-subtitle {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  margin-bottom: 3rem;
+}
+
+.social-links {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-bottom: 3rem;
+}
+
+.social-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  text-decoration: none;
+  border-radius: 50px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.social-link:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.social-icon {
+  font-size: 1.5rem;
+}
+
+.newsletter-signup {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2rem;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.newsletter-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.newsletter-form {
+  display: flex;
+  gap: 1rem;
+  max-width: 400px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+}
+
+.newsletter-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 25px;
+  font-size: 1rem;
+}
+
+.newsletter-btn {
+  padding: 0.75rem 1.5rem;
+  background: white;
+  color: #667eea;
+  border: none;
+  border-radius: 25px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.newsletter-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Footer */
 .footer {
   background: #2c3e50;
   color: white;
@@ -506,6 +838,31 @@ body {
   color: #2980b9;
 }
 
+.footer-social {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.footer-social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: #34495e;
+  color: white;
+  text-decoration: none;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.footer-social-link:hover {
+  background: #667eea;
+  transform: translateY(-2px);
+}
+
+/* Modal Styles */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -692,6 +1049,32 @@ body {
   color: #5a67d8;
 }
 
+/* Bet Message */
+.bet-message {
+  position: fixed;
+  top: 100px;
+  right: 20px;
+  background: #2ecc71;
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 8px 25px rgba(46, 204, 113, 0.3);
+  z-index: 1001;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
   .hero-title {
     font-size: 2.5rem;
@@ -730,6 +1113,23 @@ body {
     grid-template-columns: 1fr;
   }
   
+  .guide-steps {
+    grid-template-columns: 1fr;
+  }
+  
+  .social-links {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .newsletter-form {
+    flex-direction: column;
+  }
+  
+  .newsletter-input {
+    min-width: auto;
+  }
+  
   .section-header {
     flex-direction: column;
     text-align: center;
@@ -742,10 +1142,39 @@ body {
   .odds-btn {
     min-width: auto;
   }
+  
+  .hero-stats {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-section {
+    padding: 4rem 1rem;
+  }
+  
+  .live-events-section, .features-section, .user-guide-section, .social-section {
+    padding: 2rem 1rem;
+  }
+  
+  .modal-content {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+  
+  .event-teams {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .vs {
+    margin: 0;
+  }
 }
 `;
 
-// AuthContext
+// AuthContext (same as before)
 const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
@@ -860,7 +1289,72 @@ const useAuth = () => {
   return context;
 };
 
-// LoginModal Component
+// Video Modal Component
+const VideoModal = ({ isOpen, onClose }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="video-modal" onClick={onClose}>
+      <div className="video-content" onClick={e => e.stopPropagation()}>
+        <button className="video-close" onClick={onClose}>×</button>
+        <video className="video-player" controls autoPlay>
+          <source src="/playchacha_intro_video.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    </div>
+  );
+};
+
+// User Guide Modal Component
+const UserGuideModal = ({ isOpen, onClose }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={e => e.stopPropagation()} style={{maxWidth: '600px', maxHeight: '80vh'}}>
+        <div className="modal-header">
+          <h2>How to Get Started</h2>
+          <button className="close-btn" onClick={onClose}>×</button>
+        </div>
+        
+        <div style={{overflowY: 'auto'}}>
+          <div className="guide-steps">
+            <div className="guide-step">
+              <div className="step-number">1</div>
+              <h3 className="step-title">Create Account</h3>
+              <p className="step-description">Sign up with email or Google for instant access</p>
+            </div>
+            
+            <div className="guide-step">
+              <div className="step-number">2</div>
+              <h3 className="step-title">Add Funds</h3>
+              <p className="step-description">Deposit money using cards, PayPal, or crypto</p>
+            </div>
+            
+            <div className="guide-step">
+              <div className="step-number">3</div>
+              <h3 className="step-title">Place Bets</h3>
+              <p className="step-description">Click any odds button to place your first bet</p>
+            </div>
+          </div>
+          
+          <div style={{textAlign: 'center', marginTop: '2rem'}}>
+            <h3>Pro Tips:</h3>
+            <ul style={{textAlign: 'left', maxWidth: '400px', margin: '1rem auto'}}>
+              <li>Start with small bets ($5-10)</li>
+              <li>Research teams before betting</li>
+              <li>Use live betting for better odds</li>
+              <li>Set daily limits to stay in control</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// LoginModal Component (same as before)
 const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -940,7 +1434,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   );
 };
 
-// RegisterModal Component
+// RegisterModal Component (same as before)
 const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -1057,19 +1551,21 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
   );
 };
 
-// Main App Component
+// Main App Component with Enhanced Features
 function App() {
   const [currentPage, setCurrentPage] = useState('home');
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [showGuideModal, setShowGuideModal] = useState(false);
   const [events, setEvents] = useState([]);
   const [betMessage, setBetMessage] = useState('');
 
-  // Inject styles
+  // Inject enhanced styles
   useEffect(() => {
     const styleElement = document.createElement('style');
-    styleElement.textContent = styles;
+    styleElement.textContent = enhancedStyles;
     document.head.appendChild(styleElement);
     
     return () => {
@@ -1176,19 +1672,51 @@ function App() {
     }
   };
 
+  const handleNewsletterSignup = (e) => {
+    e.preventDefault();
+    const email = e.target.email.value;
+    alert(`Thanks for subscribing with ${email}! You'll receive our latest updates and betting tips.`);
+    e.target.reset();
+  };
+
   const renderHomePage = () => (
     <>
       <section className="hero-section">
         <div className="hero-content">
           <h1 className="hero-title">{t.heroTitle}</h1>
           <p className="hero-subtitle">{t.heroSubtitle}</p>
+          
+          <div className="hero-stats">
+            <div className="stat-item">
+              <span className="stat-number">2M+</span>
+              <span className="stat-label">Active Users</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-number">$50M+</span>
+              <span className="stat-label">Paid Out</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-number">24/7</span>
+              <span className="stat-label">Live Support</span>
+            </div>
+          </div>
+          
           <div className="hero-buttons">
             <button className="btn-primary" onClick={() => user ? setCurrentPage('sports') : setShowLoginModal(true)}>
               {t.startBetting}
             </button>
-            <button className="btn-secondary" onClick={() => alert('Demo video coming soon!')}>
+            <button className="btn-secondary" onClick={() => setShowVideoModal(true)}>
               {t.watchDemo}
             </button>
+          </div>
+          
+          <div className="social-proof">
+            <span className="social-proof-text">Trusted by millions worldwide</span>
+            <div className="trust-badges">
+              <span className="trust-badge">🔒 SSL Secured</span>
+              <span className="trust-badge">⚡ Instant Payouts</span>
+              <span className="trust-badge">🏆 Licensed</span>
+            </div>
           </div>
         </div>
       </section>
@@ -1252,6 +1780,32 @@ function App() {
         </div>
       </section>
 
+      <section className="user-guide-section">
+        <div className="guide-content">
+          <h2 className="guide-title">How to Get Started</h2>
+          <div className="guide-steps">
+            <div className="guide-step">
+              <div className="step-number">1</div>
+              <h3 className="step-title">Create Account</h3>
+              <p className="step-description">Sign up with email or Google for instant access to all features</p>
+            </div>
+            <div className="guide-step">
+              <div className="step-number">2</div>
+              <h3 className="step-title">Add Funds</h3>
+              <p className="step-description">Deposit money using cards, PayPal, crypto, or bank transfer</p>
+            </div>
+            <div className="guide-step">
+              <div className="step-number">3</div>
+              <h3 className="step-title">Place Bets</h3>
+              <p className="step-description">Click any odds button to place your first bet and start winning</p>
+            </div>
+          </div>
+          <button className="guide-cta" onClick={() => setShowGuideModal(true)}>
+            View Complete Guide
+          </button>
+        </div>
+      </section>
+
       <section className="features-section">
         <h2 className="features-title">{t.whyChoose}</h2>
         <div className="features-grid">
@@ -1274,6 +1828,46 @@ function App() {
             <div className="feature-icon">🔒</div>
             <h3>{t.securePlatform}</h3>
             <p>{t.securePlatformDesc}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="social-section">
+        <div className="social-content">
+          <h2 className="social-title">Join Our Community</h2>
+          <p className="social-subtitle">Follow us for betting tips, live updates, and exclusive promotions</p>
+          
+          <div className="social-links">
+            <a href="https://twitter.com/playchacha" className="social-link" target="_blank" rel="noopener noreferrer">
+              <span className="social-icon">🐦</span>
+              <span>Twitter</span>
+            </a>
+            <a href="https://instagram.com/playchacha" className="social-link" target="_blank" rel="noopener noreferrer">
+              <span className="social-icon">📸</span>
+              <span>Instagram</span>
+            </a>
+            <a href="https://facebook.com/playchacha" className="social-link" target="_blank" rel="noopener noreferrer">
+              <span className="social-icon">📘</span>
+              <span>Facebook</span>
+            </a>
+            <a href="https://youtube.com/playchacha" className="social-link" target="_blank" rel="noopener noreferrer">
+              <span className="social-icon">📺</span>
+              <span>YouTube</span>
+            </a>
+          </div>
+          
+          <div className="newsletter-signup">
+            <h3 className="newsletter-title">Get Betting Tips & Updates</h3>
+            <form className="newsletter-form" onSubmit={handleNewsletterSignup}>
+              <input 
+                type="email" 
+                name="email"
+                className="newsletter-input" 
+                placeholder="Enter your email"
+                required
+              />
+              <button type="submit" className="newsletter-btn">Subscribe</button>
+            </form>
           </div>
         </div>
       </section>
@@ -1451,6 +2045,20 @@ function App() {
           <div className="footer-section">
             <h3>PlayChaCha.net</h3>
             <p>The ultimate sports betting experience</p>
+            <div className="footer-social">
+              <a href="https://twitter.com/playchacha" className="footer-social-link" target="_blank" rel="noopener noreferrer">
+                🐦
+              </a>
+              <a href="https://instagram.com/playchacha" className="footer-social-link" target="_blank" rel="noopener noreferrer">
+                📸
+              </a>
+              <a href="https://facebook.com/playchacha" className="footer-social-link" target="_blank" rel="noopener noreferrer">
+                📘
+              </a>
+              <a href="https://youtube.com/playchacha" className="footer-social-link" target="_blank" rel="noopener noreferrer">
+                📺
+              </a>
+            </div>
           </div>
           
           <div className="footer-section">
@@ -1458,6 +2066,7 @@ function App() {
             <button onClick={() => setCurrentPage('sports')}>Sports</button>
             <button onClick={() => setCurrentPage('live')}>Live Betting</button>
             <button onClick={() => setCurrentPage('myBets')}>My Bets</button>
+            <button onClick={() => setShowGuideModal(true)}>How to Play</button>
           </div>
           
           <div className="footer-section">
@@ -1465,10 +2074,14 @@ function App() {
             <button onClick={() => alert('Help center coming soon!')}>Help Center</button>
             <button onClick={() => alert('Contact form coming soon!')}>Contact Us</button>
             <button onClick={() => alert('Terms coming soon!')}>Terms of Service</button>
+            <button onClick={() => alert('Privacy policy coming soon!')}>Privacy Policy</button>
           </div>
           
           <div className="footer-section">
+            <h4>Company</h4>
             <p>Powered by <a href="https://visnec.com" target="_blank" rel="noopener noreferrer">Visnec</a></p>
+            <p>Licensed & Regulated</p>
+            <p>© 2025 PlayChaCha.net</p>
           </div>
         </div>
       </footer>
@@ -1489,6 +2102,16 @@ function App() {
           setShowRegisterModal(false);
           setShowLoginModal(true);
         }}
+      />
+
+      <VideoModal 
+        isOpen={showVideoModal}
+        onClose={() => setShowVideoModal(false)}
+      />
+
+      <UserGuideModal 
+        isOpen={showGuideModal}
+        onClose={() => setShowGuideModal(false)}
       />
     </div>
   );
