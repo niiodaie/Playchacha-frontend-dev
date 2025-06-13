@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 
-// Enhanced inline CSS with social media and new features
-const enhancedStyles = `
+// Enhanced inline CSS with captivating sports images
+const enhancedStylesWithImages = `
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 * {
@@ -195,9 +195,12 @@ body {
   transform: translateY(-1px);
 }
 
-/* Hero Section with Enhanced CTAs */
+/* Hero Section with Sports Background */
 .hero-section {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%),
+              url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><rect fill="%23667eea" width="1200" height="600"/><g fill="rgba(255,255,255,0.1)"><circle cx="200" cy="150" r="80"/><circle cx="800" cy="300" r="120"/><circle cx="1000" cy="100" r="60"/></g></svg>');
+  background-size: cover;
+  background-position: center;
   color: white;
   padding: 6rem 2rem;
   text-align: center;
@@ -338,46 +341,7 @@ body {
   font-weight: 600;
 }
 
-/* Video Modal */
-.video-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.9);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 3000;
-  padding: 2rem;
-}
-
-.video-content {
-  position: relative;
-  max-width: 800px;
-  width: 100%;
-}
-
-.video-player {
-  width: 100%;
-  height: auto;
-  border-radius: 10px;
-}
-
-.video-close {
-  position: absolute;
-  top: -40px;
-  right: 0;
-  background: none;
-  border: none;
-  color: white;
-  font-size: 2rem;
-  cursor: pointer;
-  padding: 0.5rem;
-}
-
-/* Enhanced Live Events Section */
+/* Enhanced Live Events Section with Sport-Specific Backgrounds */
 .live-events-section {
   padding: 4rem 2rem;
   background: rgba(255, 255, 255, 0.95);
@@ -434,7 +398,7 @@ body {
   box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
 }
 
-/* Events Grid */
+/* Events Grid with Sport-Specific Backgrounds */
 .events-grid {
   max-width: 1200px;
   margin: 0 auto;
@@ -446,15 +410,50 @@ body {
 .event-card {
   background: white;
   border-radius: 20px;
-  padding: 1.5rem;
+  overflow: hidden;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
 }
 
 .event-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.event-card-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.3;
+  z-index: 1;
+}
+
+.event-card-background.nfl {
+  background-image: linear-gradient(rgba(102, 126, 234, 0.8), rgba(118, 75, 162, 0.8)),
+                    url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200"><rect fill="%23228B22" width="400" height="200"/><g stroke="%23fff" stroke-width="2" fill="none"><line x1="0" y1="50" x2="400" y2="50"/><line x1="0" y1="100" x2="400" y2="100"/><line x1="0" y1="150" x2="400" y2="150"/></g></svg>');
+}
+
+.event-card-background.nba {
+  background-image: linear-gradient(rgba(255, 140, 0, 0.8), rgba(255, 69, 0, 0.8)),
+                    url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200"><rect fill="%23D2691E" width="400" height="200"/><circle cx="200" cy="100" r="80" stroke="%23fff" stroke-width="3" fill="none"/></svg>');
+}
+
+.event-card-background.soccer {
+  background-image: linear-gradient(rgba(34, 139, 34, 0.8), rgba(0, 128, 0, 0.8)),
+                    url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200"><rect fill="%23228B22" width="400" height="200"/><circle cx="200" cy="100" r="30" stroke="%23fff" stroke-width="2" fill="none"/></svg>');
+}
+
+.event-card-content {
+  position: relative;
+  z-index: 2;
+  padding: 1.5rem;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.9) 0%, rgba(255,255,255,1) 30%);
 }
 
 .event-header {
@@ -550,10 +549,13 @@ body {
   box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
 }
 
-/* User Guide Section */
+/* User Guide Section with Celebration Background */
 .user-guide-section {
   padding: 4rem 2rem;
-  background: #f8f9fa;
+  background: linear-gradient(rgba(248, 249, 250, 0.95), rgba(248, 249, 250, 0.95)),
+              url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><rect fill="%23f8f9fa" width="1200" height="600"/><g fill="rgba(102,126,234,0.1)"><circle cx="100" cy="100" r="50"/><circle cx="1100" cy="500" r="80"/><circle cx="600" cy="300" r="40"/></g></svg>');
+  background-size: cover;
+  background-position: center;
 }
 
 .guide-content {
@@ -582,6 +584,18 @@ body {
   border-radius: 20px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.guide-step::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .guide-step:hover {
@@ -659,6 +673,24 @@ body {
   background: #f8f9fa;
   border-radius: 20px;
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.feature-card:hover::before {
+  opacity: 1;
 }
 
 .feature-card:hover {
@@ -670,6 +702,8 @@ body {
 .feature-icon {
   font-size: 3rem;
   margin-bottom: 1rem;
+  position: relative;
+  z-index: 1;
 }
 
 .feature-card h3 {
@@ -677,11 +711,15 @@ body {
   font-weight: 600;
   color: #333;
   margin-bottom: 1rem;
+  position: relative;
+  z-index: 1;
 }
 
 .feature-card p {
   color: #666;
   line-height: 1.6;
+  position: relative;
+  z-index: 1;
 }
 
 /* Social Media Section */
@@ -690,11 +728,26 @@ body {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.social-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><g fill="rgba(255,255,255,0.1)"><circle cx="200" cy="150" r="80"/><circle cx="800" cy="300" r="120"/><circle cx="1000" cy="100" r="60"/></g></svg>');
+  background-size: cover;
 }
 
 .social-content {
   max-width: 800px;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
 .social-title {
@@ -860,6 +913,45 @@ body {
 .footer-social-link:hover {
   background: #667eea;
   transform: translateY(-2px);
+}
+
+/* Video Modal */
+.video-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  padding: 2rem;
+}
+
+.video-content {
+  position: relative;
+  max-width: 800px;
+  width: 100%;
+}
+
+.video-player {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+
+.video-close {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 2rem;
+  cursor: pointer;
+  padding: 0.5rem;
 }
 
 /* Modal Styles */
@@ -1354,7 +1446,7 @@ const UserGuideModal = ({ isOpen, onClose }) => {
   );
 };
 
-// LoginModal Component (same as before)
+// LoginModal Component
 const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -1434,7 +1526,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   );
 };
 
-// RegisterModal Component (same as before)
+// RegisterModal Component
 const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -1551,7 +1643,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
   );
 };
 
-// Main App Component with Enhanced Features
+// Main App Component with Enhanced Visual Features
 function App() {
   const [currentPage, setCurrentPage] = useState('home');
   const [currentLanguage, setCurrentLanguage] = useState('en');
@@ -1562,10 +1654,10 @@ function App() {
   const [events, setEvents] = useState([]);
   const [betMessage, setBetMessage] = useState('');
 
-  // Inject enhanced styles
+  // Inject enhanced styles with images
   useEffect(() => {
     const styleElement = document.createElement('style');
-    styleElement.textContent = enhancedStyles;
+    styleElement.textContent = enhancedStylesWithImages;
     document.head.appendChild(styleElement);
     
     return () => {
@@ -1583,7 +1675,7 @@ function App() {
           setEvents(data.events || []);
         }
       } catch (error) {
-        // Fallback to mock data
+        // Fallback to mock data with sport types
         setEvents([
           {
             id: 1,
@@ -1606,6 +1698,17 @@ function App() {
             status: '4th Quarter',
             isLive: true,
             odds: { home: 2.1, away: 1.75 }
+          },
+          {
+            id: 3,
+            sport: 'Soccer',
+            homeTeam: 'Manchester United',
+            awayTeam: 'Liverpool',
+            homeScore: 1,
+            awayScore: 2,
+            status: '75th Minute',
+            isLive: true,
+            odds: { home: 2.5, draw: 3.2, away: 1.9 }
           }
         ]);
       }
@@ -1679,6 +1782,14 @@ function App() {
     e.target.reset();
   };
 
+  const getSportBackgroundClass = (sport) => {
+    const sportLower = sport.toLowerCase();
+    if (sportLower.includes('nfl') || sportLower.includes('football')) return 'nfl';
+    if (sportLower.includes('nba') || sportLower.includes('basketball')) return 'nba';
+    if (sportLower.includes('soccer') || sportLower.includes('football')) return 'soccer';
+    return 'nfl'; // default
+  };
+
   const renderHomePage = () => (
     <>
       <section className="hero-section">
@@ -1734,46 +1845,49 @@ function App() {
         <div className="events-grid">
           {events.slice(0, 4).map(event => (
             <div key={event.id} className="event-card">
-              <div className="event-header">
-                <span className="sport-tag">{event.sport}</span>
-                {event.isLive && <span className="live-indicator">LIVE</span>}
-              </div>
-              
-              <div className="event-teams">
-                <div className="team">
-                  <span className="team-name">{event.homeTeam}</span>
-                  <span className="team-score">{event.homeScore || 0}</span>
+              <div className={`event-card-background ${getSportBackgroundClass(event.sport)}`}></div>
+              <div className="event-card-content">
+                <div className="event-header">
+                  <span className="sport-tag">{event.sport}</span>
+                  {event.isLive && <span className="live-indicator">LIVE</span>}
                 </div>
-                <span className="vs">VS</span>
-                <div className="team">
-                  <span className="team-name">{event.awayTeam}</span>
-                  <span className="team-score">{event.awayScore || 0}</span>
+                
+                <div className="event-teams">
+                  <div className="team">
+                    <span className="team-name">{event.homeTeam}</span>
+                    <span className="team-score">{event.homeScore || 0}</span>
+                  </div>
+                  <span className="vs">VS</span>
+                  <div className="team">
+                    <span className="team-name">{event.awayTeam}</span>
+                    <span className="team-score">{event.awayScore || 0}</span>
+                  </div>
                 </div>
-              </div>
-              
-              <div className="event-status">{event.status}</div>
-              
-              <div className="betting-odds">
-                <button 
-                  className="odds-btn"
-                  onClick={() => handleBetClick(event, 'home', event.odds.home)}
-                >
-                  {event.homeTeam} {event.odds.home}
-                </button>
-                {event.odds.draw && (
+                
+                <div className="event-status">{event.status}</div>
+                
+                <div className="betting-odds">
                   <button 
                     className="odds-btn"
-                    onClick={() => handleBetClick(event, 'draw', event.odds.draw)}
+                    onClick={() => handleBetClick(event, 'home', event.odds.home)}
                   >
-                    Draw {event.odds.draw}
+                    {event.homeTeam} {event.odds.home}
                   </button>
-                )}
-                <button 
-                  className="odds-btn"
-                  onClick={() => handleBetClick(event, 'away', event.odds.away)}
-                >
-                  {event.awayTeam} {event.odds.away}
-                </button>
+                  {event.odds.draw && (
+                    <button 
+                      className="odds-btn"
+                      onClick={() => handleBetClick(event, 'draw', event.odds.draw)}
+                    >
+                      Draw {event.odds.draw}
+                    </button>
+                  )}
+                  <button 
+                    className="odds-btn"
+                    onClick={() => handleBetClick(event, 'away', event.odds.away)}
+                  >
+                    {event.awayTeam} {event.odds.away}
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -1876,74 +1990,87 @@ function App() {
 
   const renderSportsPage = () => (
     <div className="sports-page">
-      <h1>Sports Betting</h1>
-      <div className="events-grid">
-        {events.map(event => (
-          <div key={event.id} className="event-card">
-            <div className="event-header">
-              <span className="sport-tag">{event.sport}</span>
-              {event.isLive && <span className="live-indicator">LIVE</span>}
-            </div>
-            
-            <div className="event-teams">
-              <div className="team">
-                <span className="team-name">{event.homeTeam}</span>
-                <span className="team-score">{event.homeScore || 0}</span>
+      <section className="live-events-section">
+        <div className="section-header">
+          <h2>All Sports Events</h2>
+        </div>
+        
+        <div className="events-grid">
+          {events.map(event => (
+            <div key={event.id} className="event-card">
+              <div className={`event-card-background ${getSportBackgroundClass(event.sport)}`}></div>
+              <div className="event-card-content">
+                <div className="event-header">
+                  <span className="sport-tag">{event.sport}</span>
+                  {event.isLive && <span className="live-indicator">LIVE</span>}
+                </div>
+                
+                <div className="event-teams">
+                  <div className="team">
+                    <span className="team-name">{event.homeTeam}</span>
+                    <span className="team-score">{event.homeScore || 0}</span>
+                  </div>
+                  <span className="vs">VS</span>
+                  <div className="team">
+                    <span className="team-name">{event.awayTeam}</span>
+                    <span className="team-score">{event.awayScore || 0}</span>
+                  </div>
+                </div>
+                
+                <div className="event-status">{event.status}</div>
+                
+                <div className="betting-odds">
+                  <button 
+                    className="odds-btn"
+                    onClick={() => handleBetClick(event, 'home', event.odds.home)}
+                  >
+                    {event.homeTeam} {event.odds.home}
+                  </button>
+                  {event.odds.draw && (
+                    <button 
+                      className="odds-btn"
+                      onClick={() => handleBetClick(event, 'draw', event.odds.draw)}
+                    >
+                      Draw {event.odds.draw}
+                    </button>
+                  )}
+                  <button 
+                    className="odds-btn"
+                    onClick={() => handleBetClick(event, 'away', event.odds.away)}
+                  >
+                    {event.awayTeam} {event.odds.away}
+                  </button>
+                </div>
               </div>
-              <span className="vs">VS</span>
-              <div className="team">
-                <span className="team-name">{event.awayTeam}</span>
-                <span className="team-score">{event.awayScore || 0}</span>
-              </div>
             </div>
-            
-            <div className="event-status">{event.status}</div>
-            
-            <div className="betting-odds">
-              <button 
-                className="odds-btn"
-                onClick={() => handleBetClick(event, 'home', event.odds.home)}
-              >
-                {event.homeTeam} {event.odds.home}
-              </button>
-              {event.odds.draw && (
-                <button 
-                  className="odds-btn"
-                  onClick={() => handleBetClick(event, 'draw', event.odds.draw)}
-                >
-                  Draw {event.odds.draw}
-                </button>
-              )}
-              <button 
-                className="odds-btn"
-                onClick={() => handleBetClick(event, 'away', event.odds.away)}
-              >
-                {event.awayTeam} {event.odds.away}
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 
   const renderMyBetsPage = () => (
     <div className="my-bets-page">
-      <h1>My Bets</h1>
-      {user ? (
-        <div>
-          <p>Welcome {user.name}!</p>
-          <p>Balance: ${user.balance || 1000}</p>
-          <p>Your betting history will appear here.</p>
+      <section className="live-events-section">
+        <div className="section-header">
+          <h2>My Bets</h2>
         </div>
-      ) : (
-        <div>
-          <p>Please login to view your bets.</p>
-          <button className="btn-primary" onClick={() => setShowLoginModal(true)}>
-            Login
-          </button>
-        </div>
-      )}
+        
+        {user ? (
+          <div style={{textAlign: 'center', padding: '2rem'}}>
+            <p style={{fontSize: '1.2rem', marginBottom: '1rem'}}>Welcome {user.name}!</p>
+            <p style={{fontSize: '1.1rem', marginBottom: '2rem'}}>Balance: ${user.balance || 1000}</p>
+            <p>Your betting history will appear here.</p>
+          </div>
+        ) : (
+          <div style={{textAlign: 'center', padding: '2rem'}}>
+            <p style={{marginBottom: '2rem'}}>Please login to view your bets.</p>
+            <button className="btn-primary" onClick={() => setShowLoginModal(true)}>
+              Login
+            </button>
+          </div>
+        )}
+      </section>
     </div>
   );
 
