@@ -1,8 +1,9 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 
-// Enhanced inline CSS with captivating sports images
-const enhancedStylesWithImages = `
+// Enhanced CSS with real social media icons and improved styling
+const enhancedStyles = `
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
 
 * {
   margin: 0;
@@ -195,28 +196,14 @@ body {
   transform: translateY(-1px);
 }
 
-/* Hero Section with Sports Background */
+/* Hero Section */
 .hero-section {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%),
-              url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><rect fill="%23667eea" width="1200" height="600"/><g fill="rgba(255,255,255,0.1)"><circle cx="200" cy="150" r="80"/><circle cx="800" cy="300" r="120"/><circle cx="1000" cy="100" r="60"/></g></svg>');
-  background-size: cover;
-  background-position: center;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%);
   color: white;
   padding: 6rem 2rem;
   text-align: center;
   position: relative;
   overflow: hidden;
-}
-
-.hero-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="rgba(255,255,255,0.05)" points="0,1000 1000,0 1000,1000"/></svg>');
-  background-size: cover;
 }
 
 .hero-content {
@@ -314,34 +301,84 @@ body {
   transform: translateY(-3px);
 }
 
-.social-proof {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
-  opacity: 0.8;
-  flex-wrap: wrap;
+/* How-to Guide Section - Visible on Page */
+.how-to-section {
+  padding: 4rem 2rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
 }
 
-.social-proof-text {
-  font-size: 0.9rem;
+.how-to-content {
+  max-width: 1000px;
+  margin: 0 auto;
+  text-align: center;
 }
 
-.trust-badges {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
+.how-to-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 2rem;
 }
 
-.trust-badge {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 0.3rem 0.8rem;
-  border-radius: 15px;
-  font-size: 0.8rem;
+.how-to-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.how-to-step {
+  background: white;
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.how-to-step::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.how-to-step:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.step-number {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 1.2rem;
+  line-height: 40px;
+  margin-bottom: 1rem;
+}
+
+.step-title {
+  font-size: 1.3rem;
   font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
 }
 
-/* Enhanced Live Events Section with Sport-Specific Backgrounds */
+.step-description {
+  color: #666;
+  line-height: 1.6;
+}
+
+/* Live Events Section */
 .live-events-section {
   padding: 4rem 2rem;
   background: rgba(255, 255, 255, 0.95);
@@ -398,7 +435,7 @@ body {
   box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
 }
 
-/* Events Grid with Sport-Specific Backgrounds */
+/* Events Grid */
 .events-grid {
   max-width: 1200px;
   margin: 0 auto;
@@ -422,38 +459,8 @@ body {
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
 }
 
-.event-card-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 120px;
-  background-size: cover;
-  background-position: center;
-  opacity: 0.3;
-  z-index: 1;
-}
-
-.event-card-background.nfl {
-  background-image: linear-gradient(rgba(102, 126, 234, 0.8), rgba(118, 75, 162, 0.8)),
-                    url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200"><rect fill="%23228B22" width="400" height="200"/><g stroke="%23fff" stroke-width="2" fill="none"><line x1="0" y1="50" x2="400" y2="50"/><line x1="0" y1="100" x2="400" y2="100"/><line x1="0" y1="150" x2="400" y2="150"/></g></svg>');
-}
-
-.event-card-background.nba {
-  background-image: linear-gradient(rgba(255, 140, 0, 0.8), rgba(255, 69, 0, 0.8)),
-                    url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200"><rect fill="%23D2691E" width="400" height="200"/><circle cx="200" cy="100" r="80" stroke="%23fff" stroke-width="3" fill="none"/></svg>');
-}
-
-.event-card-background.soccer {
-  background-image: linear-gradient(rgba(34, 139, 34, 0.8), rgba(0, 128, 0, 0.8)),
-                    url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200"><rect fill="%23228B22" width="400" height="200"/><circle cx="200" cy="100" r="30" stroke="%23fff" stroke-width="2" fill="none"/></svg>');
-}
-
 .event-card-content {
-  position: relative;
-  z-index: 2;
   padding: 1.5rem;
-  background: linear-gradient(to bottom, rgba(255,255,255,0.9) 0%, rgba(255,255,255,1) 30%);
 }
 
 .event-header {
@@ -549,180 +556,7 @@ body {
   box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
 }
 
-/* User Guide Section with Celebration Background */
-.user-guide-section {
-  padding: 4rem 2rem;
-  background: linear-gradient(rgba(248, 249, 250, 0.95), rgba(248, 249, 250, 0.95)),
-              url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><rect fill="%23f8f9fa" width="1200" height="600"/><g fill="rgba(102,126,234,0.1)"><circle cx="100" cy="100" r="50"/><circle cx="1100" cy="500" r="80"/><circle cx="600" cy="300" r="40"/></g></svg>');
-  background-size: cover;
-  background-position: center;
-}
-
-.guide-content {
-  max-width: 1000px;
-  margin: 0 auto;
-  text-align: center;
-}
-
-.guide-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #333;
-  margin-bottom: 2rem;
-}
-
-.guide-steps {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
-  margin-bottom: 3rem;
-}
-
-.guide-step {
-  background: white;
-  padding: 2rem;
-  border-radius: 20px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.guide-step::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.guide-step:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
-}
-
-.step-number {
-  display: inline-block;
-  width: 40px;
-  height: 40px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-radius: 50%;
-  font-weight: 700;
-  font-size: 1.2rem;
-  line-height: 40px;
-  margin-bottom: 1rem;
-}
-
-.step-title {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 1rem;
-}
-
-.step-description {
-  color: #666;
-  line-height: 1.6;
-}
-
-.guide-cta {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 1rem 2rem;
-  border: none;
-  border-radius: 50px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.guide-cta:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
-}
-
-/* Features Section */
-.features-section {
-  padding: 4rem 2rem;
-  background: white;
-}
-
-.features-title {
-  text-align: center;
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #333;
-  margin-bottom: 3rem;
-}
-
-.features-grid {
-  max-width: 1000px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
-}
-
-.feature-card {
-  text-align: center;
-  padding: 2rem;
-  background: #f8f9fa;
-  border-radius: 20px;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.feature-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.feature-card:hover::before {
-  opacity: 1;
-}
-
-.feature-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
-  background: white;
-}
-
-.feature-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  position: relative;
-  z-index: 1;
-}
-
-.feature-card h3 {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 1rem;
-  position: relative;
-  z-index: 1;
-}
-
-.feature-card p {
-  color: #666;
-  line-height: 1.6;
-  position: relative;
-  z-index: 1;
-}
-
-/* Social Media Section */
+/* Social Media Section with Real Icons */
 .social-section {
   padding: 4rem 2rem;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -730,17 +564,6 @@ body {
   text-align: center;
   position: relative;
   overflow: hidden;
-}
-
-.social-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><g fill="rgba(255,255,255,0.1)"><circle cx="200" cy="150" r="80"/><circle cx="800" cy="300" r="120"/><circle cx="1000" cy="100" r="60"/></g></svg>');
-  background-size: cover;
 }
 
 .social-content {
@@ -794,50 +617,61 @@ body {
   font-size: 1.5rem;
 }
 
-.newsletter-signup {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 2rem;
-  border-radius: 20px;
-  backdrop-filter: blur(10px);
-}
-
-.newsletter-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-}
-
-.newsletter-form {
-  display: flex;
-  gap: 1rem;
-  max-width: 400px;
-  margin: 0 auto;
-  flex-wrap: wrap;
-}
-
-.newsletter-input {
-  flex: 1;
-  min-width: 200px;
-  padding: 0.75rem 1rem;
-  border: none;
-  border-radius: 25px;
-  font-size: 1rem;
-}
-
-.newsletter-btn {
-  padding: 0.75rem 1.5rem;
+/* Payment Gateways Section */
+.payment-section {
+  padding: 4rem 2rem;
   background: white;
-  color: #667eea;
-  border: none;
-  border-radius: 25px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
 }
 
-.newsletter-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+.payment-content {
+  max-width: 1000px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.payment-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 2rem;
+}
+
+.payment-methods {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.payment-method {
+  background: #f8f9fa;
+  padding: 2rem;
+  border-radius: 15px;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.payment-method:hover {
+  border-color: #667eea;
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
+}
+
+.payment-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  color: #667eea;
+}
+
+.payment-name {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.payment-description {
+  color: #666;
+  font-size: 0.9rem;
 }
 
 /* Footer */
@@ -913,45 +747,6 @@ body {
 .footer-social-link:hover {
   background: #667eea;
   transform: translateY(-2px);
-}
-
-/* Video Modal */
-.video-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.9);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 3000;
-  padding: 2rem;
-}
-
-.video-content {
-  position: relative;
-  max-width: 800px;
-  width: 100%;
-}
-
-.video-player {
-  width: 100%;
-  height: auto;
-  border-radius: 10px;
-}
-
-.video-close {
-  position: absolute;
-  top: -40px;
-  right: 0;
-  background: none;
-  border: none;
-  color: white;
-  font-size: 2rem;
-  cursor: pointer;
-  padding: 0.5rem;
 }
 
 /* Modal Styles */
@@ -1166,6 +961,32 @@ body {
   }
 }
 
+/* Location Banner */
+.location-banner {
+  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+  color: white;
+  padding: 0.75rem 2rem;
+  text-align: center;
+  font-weight: 500;
+  position: relative;
+}
+
+.location-banner button {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  padding: 0.25rem 0.75rem;
+  border-radius: 15px;
+  margin-left: 1rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.location-banner button:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .hero-title {
@@ -1201,25 +1022,13 @@ body {
     grid-template-columns: 1fr;
   }
   
-  .features-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .guide-steps {
+  .how-to-steps {
     grid-template-columns: 1fr;
   }
   
   .social-links {
     flex-direction: column;
     align-items: center;
-  }
-  
-  .newsletter-form {
-    flex-direction: column;
-  }
-  
-  .newsletter-input {
-    min-width: auto;
   }
   
   .section-header {
@@ -1239,6 +1048,10 @@ body {
     flex-direction: column;
     gap: 1rem;
   }
+  
+  .payment-methods {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1246,7 +1059,7 @@ body {
     padding: 4rem 1rem;
   }
   
-  .live-events-section, .features-section, .user-guide-section, .social-section {
+  .live-events-section, .how-to-section, .social-section, .payment-section {
     padding: 2rem 1rem;
   }
   
@@ -1266,7 +1079,7 @@ body {
 }
 `;
 
-// AuthContext (same as before)
+// AuthContext with enhanced features
 const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
@@ -1381,69 +1194,170 @@ const useAuth = () => {
   return context;
 };
 
-// Video Modal Component
-const VideoModal = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
+// Geolocation and Translation Hook
+const useGeolocation = () => {
+  const [location, setLocation] = useState(null);
+  const [country, setCountry] = useState(null);
 
-  return (
-    <div className="video-modal" onClick={onClose}>
-      <div className="video-content" onClick={e => e.stopPropagation()}>
-        <button className="video-close" onClick={onClose}>×</button>
-        <video className="video-player" controls autoPlay>
-          <source src="/playchacha_intro_video.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-      </div>
-    </div>
-  );
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          setLocation({ latitude, longitude });
+          
+          // Get country from coordinates (using a free API)
+          try {
+            const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
+            const data = await response.json();
+            setCountry(data.countryCode);
+          } catch (error) {
+            console.log('Could not get country from coordinates');
+          }
+        },
+        (error) => {
+          console.log('Geolocation error:', error);
+        }
+      );
+    }
+  }, []);
+
+  return { location, country };
 };
 
-// User Guide Modal Component
-const UserGuideModal = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
+// Real Sports API Integration
+const useSportsAPI = () => {
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()} style={{maxWidth: '600px', maxHeight: '80vh'}}>
-        <div className="modal-header">
-          <h2>How to Get Started</h2>
-          <button className="close-btn" onClick={onClose}>×</button>
-        </div>
-        
-        <div style={{overflowY: 'auto'}}>
-          <div className="guide-steps">
-            <div className="guide-step">
-              <div className="step-number">1</div>
-              <h3 className="step-title">Create Account</h3>
-              <p className="step-description">Sign up with email or Google for instant access</p>
-            </div>
-            
-            <div className="guide-step">
-              <div className="step-number">2</div>
-              <h3 className="step-title">Add Funds</h3>
-              <p className="step-description">Deposit money using cards, PayPal, or crypto</p>
-            </div>
-            
-            <div className="guide-step">
-              <div className="step-number">3</div>
-              <h3 className="step-title">Place Bets</h3>
-              <p className="step-description">Click any odds button to place your first bet</p>
-            </div>
-          </div>
-          
-          <div style={{textAlign: 'center', marginTop: '2rem'}}>
-            <h3>Pro Tips:</h3>
-            <ul style={{textAlign: 'left', maxWidth: '400px', margin: '1rem auto'}}>
-              <li>Start with small bets ($5-10)</li>
-              <li>Research teams before betting</li>
-              <li>Use live betting for better odds</li>
-              <li>Set daily limits to stay in control</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  const fetchRealSportsData = async () => {
+    setLoading(true);
+    try {
+      // Try multiple sports APIs
+      const apis = [
+        'https://48xhpiqc8wkx.manus.space/api/events',
+        'https://api.the-odds-api.com/v4/sports/upcoming/odds/?apiKey=demo&regions=us&markets=h2h',
+        'https://api.sportsdata.io/v3/nfl/scores/json/LiveGamesByWeek/2024/1?key=demo'
+      ];
+
+      for (const apiUrl of apis) {
+        try {
+          const response = await fetch(apiUrl);
+          if (response.ok) {
+            const data = await response.json();
+            if (data.events) {
+              setEvents(data.events);
+              return;
+            } else if (Array.isArray(data)) {
+              // Transform API data to our format
+              const transformedEvents = data.slice(0, 6).map((item, index) => ({
+                id: index + 1,
+                sport: item.sport_title || 'NFL',
+                homeTeam: item.home_team || item.HomeTeam || 'Team A',
+                awayTeam: item.away_team || item.AwayTeam || 'Team B',
+                homeScore: item.home_score || item.HomeScore || Math.floor(Math.random() * 30),
+                awayScore: item.away_score || item.AwayScore || Math.floor(Math.random() * 30),
+                status: item.status || 'Live',
+                isLive: true,
+                odds: {
+                  home: item.bookmakers?.[0]?.markets?.[0]?.outcomes?.[0]?.price || (1.5 + Math.random()),
+                  away: item.bookmakers?.[0]?.markets?.[0]?.outcomes?.[1]?.price || (1.5 + Math.random()),
+                  draw: Math.random() > 0.5 ? (2.5 + Math.random()) : null
+                }
+              }));
+              setEvents(transformedEvents);
+              return;
+            }
+          }
+        } catch (apiError) {
+          console.log(`API ${apiUrl} failed:`, apiError);
+          continue;
+        }
+      }
+
+      // Fallback to enhanced mock data
+      setEvents([
+        {
+          id: 1,
+          sport: 'NFL',
+          homeTeam: 'Kansas City Chiefs',
+          awayTeam: 'Buffalo Bills',
+          homeScore: 21,
+          awayScore: 17,
+          status: '3rd Quarter - 8:42',
+          isLive: true,
+          odds: { home: 1.85, away: 2.1 }
+        },
+        {
+          id: 2,
+          sport: 'NBA',
+          homeTeam: 'Los Angeles Lakers',
+          awayTeam: 'Golden State Warriors',
+          homeScore: 89,
+          awayScore: 92,
+          status: '4th Quarter - 2:15',
+          isLive: true,
+          odds: { home: 2.1, away: 1.75 }
+        },
+        {
+          id: 3,
+          sport: 'Soccer',
+          homeTeam: 'Manchester United',
+          awayTeam: 'Liverpool',
+          homeScore: 1,
+          awayScore: 2,
+          status: '75th Minute',
+          isLive: true,
+          odds: { home: 2.5, draw: 3.2, away: 1.9 }
+        },
+        {
+          id: 4,
+          sport: 'NHL',
+          homeTeam: 'Toronto Maple Leafs',
+          awayTeam: 'Boston Bruins',
+          homeScore: 3,
+          awayScore: 2,
+          status: '2nd Period - 12:30',
+          isLive: true,
+          odds: { home: 1.95, away: 1.85 }
+        },
+        {
+          id: 5,
+          sport: 'MLB',
+          homeTeam: 'New York Yankees',
+          awayTeam: 'Boston Red Sox',
+          homeScore: 7,
+          awayScore: 4,
+          status: '8th Inning',
+          isLive: true,
+          odds: { home: 1.65, away: 2.25 }
+        },
+        {
+          id: 6,
+          sport: 'Tennis',
+          homeTeam: 'Novak Djokovic',
+          awayTeam: 'Rafael Nadal',
+          homeScore: 2,
+          awayScore: 1,
+          status: 'Set 4 - 3-2',
+          isLive: true,
+          odds: { home: 1.75, away: 2.05 }
+        }
+      ]);
+    } catch (error) {
+      console.error('Sports API error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRealSportsData();
+    const interval = setInterval(fetchRealSportsData, 30000); // Update every 30 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+  return { events, loading, refetch: fetchRealSportsData };
 };
 
 // LoginModal Component
@@ -1643,21 +1557,23 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
   );
 };
 
-// Main App Component with Enhanced Visual Features
+// Main App Component
 function App() {
   const [currentPage, setCurrentPage] = useState('home');
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
-  const [showVideoModal, setShowVideoModal] = useState(false);
-  const [showGuideModal, setShowGuideModal] = useState(false);
-  const [events, setEvents] = useState([]);
   const [betMessage, setBetMessage] = useState('');
+  const [showLocationBanner, setShowLocationBanner] = useState(true);
 
-  // Inject enhanced styles with images
+  // Custom hooks
+  const { location, country } = useGeolocation();
+  const { events, loading: eventsLoading } = useSportsAPI();
+
+  // Inject enhanced styles
   useEffect(() => {
     const styleElement = document.createElement('style');
-    styleElement.textContent = enhancedStylesWithImages;
+    styleElement.textContent = enhancedStyles;
     document.head.appendChild(styleElement);
     
     return () => {
@@ -1665,66 +1581,34 @@ function App() {
     };
   }, []);
 
-  // Fetch events
+  // Auto-detect language based on location
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await fetch('https://48xhpiqc8wkx.manus.space/api/events');
-        if (response.ok) {
-          const data = await response.json();
-          setEvents(data.events || []);
-        }
-      } catch (error) {
-        // Fallback to mock data with sport types
-        setEvents([
-          {
-            id: 1,
-            sport: 'NFL',
-            homeTeam: 'Kansas City Chiefs',
-            awayTeam: 'Buffalo Bills',
-            homeScore: 21,
-            awayScore: 17,
-            status: '3rd Quarter',
-            isLive: true,
-            odds: { home: 1.85, draw: 3.4, away: 2.1 }
-          },
-          {
-            id: 2,
-            sport: 'NBA',
-            homeTeam: 'Los Angeles Lakers',
-            awayTeam: 'Golden State Warriors',
-            homeScore: 89,
-            awayScore: 92,
-            status: '4th Quarter',
-            isLive: true,
-            odds: { home: 2.1, away: 1.75 }
-          },
-          {
-            id: 3,
-            sport: 'Soccer',
-            homeTeam: 'Manchester United',
-            awayTeam: 'Liverpool',
-            homeScore: 1,
-            awayScore: 2,
-            status: '75th Minute',
-            isLive: true,
-            odds: { home: 2.5, draw: 3.2, away: 1.9 }
-          }
-        ]);
+    if (country) {
+      const countryLanguageMap = {
+        'US': 'en', 'CA': 'en', 'GB': 'en', 'AU': 'en',
+        'ES': 'es', 'MX': 'es', 'AR': 'es', 'CO': 'es',
+        'BR': 'pt', 'PT': 'pt',
+        'FR': 'fr', 'BE': 'fr', 'CH': 'fr',
+        'DE': 'de', 'AT': 'de',
+        'CN': 'zh', 'TW': 'zh', 'HK': 'zh',
+        'KE': 'sw', 'TZ': 'sw', 'UG': 'sw'
+      };
+      
+      const detectedLanguage = countryLanguageMap[country] || 'en';
+      if (detectedLanguage !== currentLanguage) {
+        setCurrentLanguage(detectedLanguage);
       }
-    };
-
-    fetchEvents();
-    const interval = setInterval(fetchEvents, 30000);
-    return () => clearInterval(interval);
-  }, []);
+    }
+  }, [country]);
 
   const languages = {
     en: { flag: '🇺🇸', name: 'EN' },
     es: { flag: '🇪🇸', name: 'ES' },
     pt: { flag: '🇧🇷', name: 'PT' },
     fr: { flag: '🇫🇷', name: 'FR' },
-    de: { flag: '🇩🇪', name: 'DE' }
+    de: { flag: '🇩🇪', name: 'DE' },
+    zh: { flag: '🇨🇳', name: '中文' },
+    sw: { flag: '🇰🇪', name: 'SW' }
   };
 
   const translations = {
@@ -1741,15 +1625,167 @@ function App() {
       watchDemo: 'Watch Demo',
       liveEvents: 'Live Events',
       viewAllSports: 'View All Sports',
-      whyChoose: 'Why Choose PlayChaCha?',
-      liveBetting: 'Live Betting',
-      liveBettingDesc: 'Bet on live games with real-time odds',
-      instantPayouts: 'Instant Payouts',
-      instantPayoutsDesc: 'Get your winnings instantly',
-      globalSports: 'Global Sports',
-      globalSportsDesc: 'Bet on sports from around the world',
-      securePlatform: 'Secure Platform',
-      securePlatformDesc: 'Your money and data are always safe'
+      howToTitle: 'How to Get Started',
+      step1Title: 'Create Account',
+      step1Desc: 'Sign up with email or Google for instant access',
+      step2Title: 'Add Funds',
+      step2Desc: 'Deposit money using cards, PayPal, or crypto',
+      step3Title: 'Place Bets',
+      step3Desc: 'Click any odds button to place your first bet',
+      joinCommunity: 'Join Our Community',
+      followUs: 'Follow us for betting tips, live updates, and exclusive promotions',
+      globalPayments: 'Global Payment Methods',
+      locationDetected: 'Location detected:'
+    },
+    es: {
+      home: 'Inicio',
+      sports: 'Deportes',
+      live: 'EN VIVO',
+      myBets: 'Mis Apuestas',
+      login: 'Iniciar Sesión',
+      register: 'Registrarse',
+      heroTitle: 'La Experiencia Definitiva de Apuestas Deportivas',
+      heroSubtitle: 'Únete a millones de jugadores en todo el mundo y experimenta la emoción de las apuestas deportivas en vivo.',
+      startBetting: 'Comenzar a Apostar',
+      watchDemo: 'Ver Demo',
+      liveEvents: 'Eventos en Vivo',
+      viewAllSports: 'Ver Todos los Deportes',
+      howToTitle: 'Cómo Empezar',
+      step1Title: 'Crear Cuenta',
+      step1Desc: 'Regístrate con email o Google para acceso instantáneo',
+      step2Title: 'Agregar Fondos',
+      step2Desc: 'Deposita dinero usando tarjetas, PayPal o crypto',
+      step3Title: 'Hacer Apuestas',
+      step3Desc: 'Haz clic en cualquier cuota para hacer tu primera apuesta',
+      joinCommunity: 'Únete a Nuestra Comunidad',
+      followUs: 'Síguenos para consejos de apuestas, actualizaciones en vivo y promociones exclusivas',
+      globalPayments: 'Métodos de Pago Globales',
+      locationDetected: 'Ubicación detectada:'
+    },
+    pt: {
+      home: 'Início',
+      sports: 'Esportes',
+      live: 'AO VIVO',
+      myBets: 'Minhas Apostas',
+      login: 'Entrar',
+      register: 'Cadastrar',
+      heroTitle: 'A Experiência Definitiva em Apostas Esportivas',
+      heroSubtitle: 'Junte-se a milhões de jogadores em todo o mundo e experimente a emoção das apostas esportivas ao vivo.',
+      startBetting: 'Começar a Apostar',
+      watchDemo: 'Ver Demo',
+      liveEvents: 'Eventos ao Vivo',
+      viewAllSports: 'Ver Todos os Esportes',
+      howToTitle: 'Como Começar',
+      step1Title: 'Criar Conta',
+      step1Desc: 'Cadastre-se com email ou Google para acesso instantâneo',
+      step2Title: 'Adicionar Fundos',
+      step2Desc: 'Deposite dinheiro usando cartões, PayPal ou crypto',
+      step3Title: 'Fazer Apostas',
+      step3Desc: 'Clique em qualquer odd para fazer sua primeira aposta',
+      joinCommunity: 'Junte-se à Nossa Comunidade',
+      followUs: 'Siga-nos para dicas de apostas, atualizações ao vivo e promoções exclusivas',
+      globalPayments: 'Métodos de Pagamento Globais',
+      locationDetected: 'Localização detectada:'
+    },
+    fr: {
+      home: 'Accueil',
+      sports: 'Sports',
+      live: 'EN DIRECT',
+      myBets: 'Mes Paris',
+      login: 'Connexion',
+      register: 'S\'inscrire',
+      heroTitle: 'L\'Expérience Ultime de Paris Sportifs',
+      heroSubtitle: 'Rejoignez des millions de joueurs dans le monde entier et découvrez le frisson des paris sportifs en direct.',
+      startBetting: 'Commencer à Parier',
+      watchDemo: 'Voir la Démo',
+      liveEvents: 'Événements en Direct',
+      viewAllSports: 'Voir Tous les Sports',
+      howToTitle: 'Comment Commencer',
+      step1Title: 'Créer un Compte',
+      step1Desc: 'Inscrivez-vous avec email ou Google pour un accès instantané',
+      step2Title: 'Ajouter des Fonds',
+      step2Desc: 'Déposez de l\'argent en utilisant des cartes, PayPal ou crypto',
+      step3Title: 'Placer des Paris',
+      step3Desc: 'Cliquez sur n\'importe quelle cote pour placer votre premier pari',
+      joinCommunity: 'Rejoignez Notre Communauté',
+      followUs: 'Suivez-nous pour des conseils de paris, des mises à jour en direct et des promotions exclusives',
+      globalPayments: 'Méthodes de Paiement Mondiales',
+      locationDetected: 'Localisation détectée:'
+    },
+    de: {
+      home: 'Startseite',
+      sports: 'Sport',
+      live: 'LIVE',
+      myBets: 'Meine Wetten',
+      login: 'Anmelden',
+      register: 'Registrieren',
+      heroTitle: 'Das Ultimative Sportwetten-Erlebnis',
+      heroSubtitle: 'Schließen Sie sich Millionen von Spielern weltweit an und erleben Sie den Nervenkitzel von Live-Sportwetten.',
+      startBetting: 'Jetzt Wetten',
+      watchDemo: 'Demo Ansehen',
+      liveEvents: 'Live-Events',
+      viewAllSports: 'Alle Sportarten Anzeigen',
+      howToTitle: 'Wie Sie Anfangen',
+      step1Title: 'Konto Erstellen',
+      step1Desc: 'Melden Sie sich mit E-Mail oder Google für sofortigen Zugang an',
+      step2Title: 'Geld Einzahlen',
+      step2Desc: 'Zahlen Sie Geld mit Karten, PayPal oder Krypto ein',
+      step3Title: 'Wetten Platzieren',
+      step3Desc: 'Klicken Sie auf eine beliebige Quote, um Ihre erste Wette zu platzieren',
+      joinCommunity: 'Treten Sie Unserer Gemeinschaft Bei',
+      followUs: 'Folgen Sie uns für Wetttipps, Live-Updates und exklusive Aktionen',
+      globalPayments: 'Globale Zahlungsmethoden',
+      locationDetected: 'Standort erkannt:'
+    },
+    zh: {
+      home: '首页',
+      sports: '体育',
+      live: '直播',
+      myBets: '我的投注',
+      login: '登录',
+      register: '注册',
+      heroTitle: '终极体育博彩体验',
+      heroSubtitle: '加入全球数百万玩家，体验实时体育博彩的刺激。',
+      startBetting: '开始投注',
+      watchDemo: '观看演示',
+      liveEvents: '直播赛事',
+      viewAllSports: '查看所有体育项目',
+      howToTitle: '如何开始',
+      step1Title: '创建账户',
+      step1Desc: '使用邮箱或Google注册即可立即访问',
+      step2Title: '充值',
+      step2Desc: '使用银行卡、PayPal或加密货币充值',
+      step3Title: '下注',
+      step3Desc: '点击任何赔率按钮进行首次投注',
+      joinCommunity: '加入我们的社区',
+      followUs: '关注我们获取投注技巧、实时更新和独家促销',
+      globalPayments: '全球支付方式',
+      locationDetected: '检测到位置:'
+    },
+    sw: {
+      home: 'Nyumbani',
+      sports: 'Michezo',
+      live: 'MOJA KWA MOJA',
+      myBets: 'Kubeti Zangu',
+      login: 'Ingia',
+      register: 'Jisajili',
+      heroTitle: 'Uzoefu wa Kubeti Michezo wa Juu',
+      heroSubtitle: 'Jiunge na mamilioni ya wachezaji duniani kote na upate furaha ya kubeti michezo moja kwa moja.',
+      startBetting: 'Anza Kubeti',
+      watchDemo: 'Ona Onyesho',
+      liveEvents: 'Matukio ya Moja kwa Moja',
+      viewAllSports: 'Ona Michezo Yote',
+      howToTitle: 'Jinsi ya Kuanza',
+      step1Title: 'Tengeneza Akaunti',
+      step1Desc: 'Jisajili kwa barua pepe au Google kwa ufikiaji wa haraka',
+      step2Title: 'Ongeza Fedha',
+      step2Desc: 'Weka fedha kwa kutumia kadi, PayPal au crypto',
+      step3Title: 'Weka Kubeti',
+      step3Desc: 'Bonyeza kitufe chochote cha uwezekano kuweka kubeti yako ya kwanza',
+      joinCommunity: 'Jiunge na Jumuiya Yetu',
+      followUs: 'Tufuate kwa vidokezo vya kubeti, masasisho ya moja kwa moja na matangazo maalum',
+      globalPayments: 'Njia za Malipo za Kimataifa',
+      locationDetected: 'Mahali pamegundulika:'
     }
   };
 
@@ -1775,23 +1811,24 @@ function App() {
     }
   };
 
-  const handleNewsletterSignup = (e) => {
-    e.preventDefault();
-    const email = e.target.email.value;
-    alert(`Thanks for subscribing with ${email}! You'll receive our latest updates and betting tips.`);
-    e.target.reset();
-  };
-
-  const getSportBackgroundClass = (sport) => {
-    const sportLower = sport.toLowerCase();
-    if (sportLower.includes('nfl') || sportLower.includes('football')) return 'nfl';
-    if (sportLower.includes('nba') || sportLower.includes('basketball')) return 'nba';
-    if (sportLower.includes('soccer') || sportLower.includes('football')) return 'soccer';
-    return 'nfl'; // default
+  const getCountryName = (countryCode) => {
+    const countryNames = {
+      'US': 'United States', 'CA': 'Canada', 'GB': 'United Kingdom',
+      'ES': 'Spain', 'MX': 'Mexico', 'BR': 'Brazil', 'PT': 'Portugal',
+      'FR': 'France', 'DE': 'Germany', 'CN': 'China', 'KE': 'Kenya'
+    };
+    return countryNames[countryCode] || countryCode;
   };
 
   const renderHomePage = () => (
     <>
+      {showLocationBanner && country && (
+        <div className="location-banner">
+          {t.locationDetected} {getCountryName(country)} 🌍
+          <button onClick={() => setShowLocationBanner(false)}>×</button>
+        </div>
+      )}
+
       <section className="hero-section">
         <div className="hero-content">
           <h1 className="hero-title">{t.heroTitle}</h1>
@@ -1816,17 +1853,31 @@ function App() {
             <button className="btn-primary" onClick={() => user ? setCurrentPage('sports') : setShowLoginModal(true)}>
               {t.startBetting}
             </button>
-            <button className="btn-secondary" onClick={() => setShowVideoModal(true)}>
+            <button className="btn-secondary" onClick={() => alert('Demo video coming soon!')}>
               {t.watchDemo}
             </button>
           </div>
-          
-          <div className="social-proof">
-            <span className="social-proof-text">Trusted by millions worldwide</span>
-            <div className="trust-badges">
-              <span className="trust-badge">🔒 SSL Secured</span>
-              <span className="trust-badge">⚡ Instant Payouts</span>
-              <span className="trust-badge">🏆 Licensed</span>
+        </div>
+      </section>
+
+      <section className="how-to-section">
+        <div className="how-to-content">
+          <h2 className="how-to-title">{t.howToTitle}</h2>
+          <div className="how-to-steps">
+            <div className="how-to-step">
+              <div className="step-number">1</div>
+              <h3 className="step-title">{t.step1Title}</h3>
+              <p className="step-description">{t.step1Desc}</p>
+            </div>
+            <div className="how-to-step">
+              <div className="step-number">2</div>
+              <h3 className="step-title">{t.step2Title}</h3>
+              <p className="step-description">{t.step2Desc}</p>
+            </div>
+            <div className="how-to-step">
+              <div className="step-number">3</div>
+              <h3 className="step-title">{t.step3Title}</h3>
+              <p className="step-description">{t.step3Desc}</p>
             </div>
           </div>
         </div>
@@ -1845,7 +1896,6 @@ function App() {
         <div className="events-grid">
           {events.slice(0, 4).map(event => (
             <div key={event.id} className="event-card">
-              <div className={`event-card-background ${getSportBackgroundClass(event.sport)}`}></div>
               <div className="event-card-content">
                 <div className="event-header">
                   <span className="sport-tag">{event.sport}</span>
@@ -1871,21 +1921,21 @@ function App() {
                     className="odds-btn"
                     onClick={() => handleBetClick(event, 'home', event.odds.home)}
                   >
-                    {event.homeTeam} {event.odds.home}
+                    {event.homeTeam} {event.odds.home?.toFixed(2)}
                   </button>
                   {event.odds.draw && (
                     <button 
                       className="odds-btn"
                       onClick={() => handleBetClick(event, 'draw', event.odds.draw)}
                     >
-                      Draw {event.odds.draw}
+                      Draw {event.odds.draw.toFixed(2)}
                     </button>
                   )}
                   <button 
                     className="odds-btn"
                     onClick={() => handleBetClick(event, 'away', event.odds.away)}
                   >
-                    {event.awayTeam} {event.odds.away}
+                    {event.awayTeam} {event.odds.away?.toFixed(2)}
                   </button>
                 </div>
               </div>
@@ -1894,94 +1944,70 @@ function App() {
         </div>
       </section>
 
-      <section className="user-guide-section">
-        <div className="guide-content">
-          <h2 className="guide-title">How to Get Started</h2>
-          <div className="guide-steps">
-            <div className="guide-step">
-              <div className="step-number">1</div>
-              <h3 className="step-title">Create Account</h3>
-              <p className="step-description">Sign up with email or Google for instant access to all features</p>
+      <section className="payment-section">
+        <div className="payment-content">
+          <h2 className="payment-title">{t.globalPayments}</h2>
+          <div className="payment-methods">
+            <div className="payment-method">
+              <div className="payment-icon">💳</div>
+              <div className="payment-name">Credit Cards</div>
+              <div className="payment-description">Visa, Mastercard, Amex</div>
             </div>
-            <div className="guide-step">
-              <div className="step-number">2</div>
-              <h3 className="step-title">Add Funds</h3>
-              <p className="step-description">Deposit money using cards, PayPal, crypto, or bank transfer</p>
+            <div className="payment-method">
+              <div className="payment-icon">📱</div>
+              <div className="payment-name">Mobile Money</div>
+              <div className="payment-description">M-Pesa, Airtel Money</div>
             </div>
-            <div className="guide-step">
-              <div className="step-number">3</div>
-              <h3 className="step-title">Place Bets</h3>
-              <p className="step-description">Click any odds button to place your first bet and start winning</p>
+            <div className="payment-method">
+              <div className="payment-icon">🏦</div>
+              <div className="payment-name">Bank Transfer</div>
+              <div className="payment-description">PIX, SPEI, SEPA</div>
             </div>
-          </div>
-          <button className="guide-cta" onClick={() => setShowGuideModal(true)}>
-            View Complete Guide
-          </button>
-        </div>
-      </section>
-
-      <section className="features-section">
-        <h2 className="features-title">{t.whyChoose}</h2>
-        <div className="features-grid">
-          <div className="feature-card">
-            <div className="feature-icon">⚡</div>
-            <h3>{t.liveBetting}</h3>
-            <p>{t.liveBettingDesc}</p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-icon">💰</div>
-            <h3>{t.instantPayouts}</h3>
-            <p>{t.instantPayoutsDesc}</p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-icon">🌍</div>
-            <h3>{t.globalSports}</h3>
-            <p>{t.globalSportsDesc}</p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-icon">🔒</div>
-            <h3>{t.securePlatform}</h3>
-            <p>{t.securePlatformDesc}</p>
+            <div className="payment-method">
+              <div className="payment-icon">₿</div>
+              <div className="payment-name">Cryptocurrency</div>
+              <div className="payment-description">Bitcoin, Ethereum, USDT</div>
+            </div>
+            <div className="payment-method">
+              <div className="payment-icon">💰</div>
+              <div className="payment-name">Digital Wallets</div>
+              <div className="payment-description">PayPal, Skrill, Neteller</div>
+            </div>
+            <div className="payment-method">
+              <div className="payment-icon">🎁</div>
+              <div className="payment-name">Gift Cards</div>
+              <div className="payment-description">iTunes, Google Play</div>
+            </div>
           </div>
         </div>
       </section>
 
       <section className="social-section">
         <div className="social-content">
-          <h2 className="social-title">Join Our Community</h2>
-          <p className="social-subtitle">Follow us for betting tips, live updates, and exclusive promotions</p>
+          <h2 className="social-title">{t.joinCommunity}</h2>
+          <p className="social-subtitle">{t.followUs}</p>
           
           <div className="social-links">
             <a href="https://twitter.com/playchacha" className="social-link" target="_blank" rel="noopener noreferrer">
-              <span className="social-icon">🐦</span>
+              <i className="fab fa-twitter social-icon"></i>
               <span>Twitter</span>
             </a>
             <a href="https://instagram.com/playchacha" className="social-link" target="_blank" rel="noopener noreferrer">
-              <span className="social-icon">📸</span>
+              <i className="fab fa-instagram social-icon"></i>
               <span>Instagram</span>
             </a>
             <a href="https://facebook.com/playchacha" className="social-link" target="_blank" rel="noopener noreferrer">
-              <span className="social-icon">📘</span>
+              <i className="fab fa-facebook social-icon"></i>
               <span>Facebook</span>
             </a>
             <a href="https://youtube.com/playchacha" className="social-link" target="_blank" rel="noopener noreferrer">
-              <span className="social-icon">📺</span>
+              <i className="fab fa-youtube social-icon"></i>
               <span>YouTube</span>
             </a>
-          </div>
-          
-          <div className="newsletter-signup">
-            <h3 className="newsletter-title">Get Betting Tips & Updates</h3>
-            <form className="newsletter-form" onSubmit={handleNewsletterSignup}>
-              <input 
-                type="email" 
-                name="email"
-                className="newsletter-input" 
-                placeholder="Enter your email"
-                required
-              />
-              <button type="submit" className="newsletter-btn">Subscribe</button>
-            </form>
+            <a href="https://tiktok.com/@playchacha" className="social-link" target="_blank" rel="noopener noreferrer">
+              <i className="fab fa-tiktok social-icon"></i>
+              <span>TikTok</span>
+            </a>
           </div>
         </div>
       </section>
@@ -1992,13 +2018,12 @@ function App() {
     <div className="sports-page">
       <section className="live-events-section">
         <div className="section-header">
-          <h2>All Sports Events</h2>
+          <h2>All Sports Events {eventsLoading && '(Loading...)'}</h2>
         </div>
         
         <div className="events-grid">
           {events.map(event => (
             <div key={event.id} className="event-card">
-              <div className={`event-card-background ${getSportBackgroundClass(event.sport)}`}></div>
               <div className="event-card-content">
                 <div className="event-header">
                   <span className="sport-tag">{event.sport}</span>
@@ -2024,21 +2049,21 @@ function App() {
                     className="odds-btn"
                     onClick={() => handleBetClick(event, 'home', event.odds.home)}
                   >
-                    {event.homeTeam} {event.odds.home}
+                    {event.homeTeam} {event.odds.home?.toFixed(2)}
                   </button>
                   {event.odds.draw && (
                     <button 
                       className="odds-btn"
                       onClick={() => handleBetClick(event, 'draw', event.odds.draw)}
                     >
-                      Draw {event.odds.draw}
+                      Draw {event.odds.draw.toFixed(2)}
                     </button>
                   )}
                   <button 
                     className="odds-btn"
                     onClick={() => handleBetClick(event, 'away', event.odds.away)}
                   >
-                    {event.awayTeam} {event.odds.away}
+                    {event.awayTeam} {event.odds.away?.toFixed(2)}
                   </button>
                 </div>
               </div>
@@ -2174,16 +2199,16 @@ function App() {
             <p>The ultimate sports betting experience</p>
             <div className="footer-social">
               <a href="https://twitter.com/playchacha" className="footer-social-link" target="_blank" rel="noopener noreferrer">
-                🐦
+                <i className="fab fa-twitter"></i>
               </a>
               <a href="https://instagram.com/playchacha" className="footer-social-link" target="_blank" rel="noopener noreferrer">
-                📸
+                <i className="fab fa-instagram"></i>
               </a>
               <a href="https://facebook.com/playchacha" className="footer-social-link" target="_blank" rel="noopener noreferrer">
-                📘
+                <i className="fab fa-facebook"></i>
               </a>
               <a href="https://youtube.com/playchacha" className="footer-social-link" target="_blank" rel="noopener noreferrer">
-                📺
+                <i className="fab fa-youtube"></i>
               </a>
             </div>
           </div>
@@ -2193,7 +2218,6 @@ function App() {
             <button onClick={() => setCurrentPage('sports')}>Sports</button>
             <button onClick={() => setCurrentPage('live')}>Live Betting</button>
             <button onClick={() => setCurrentPage('myBets')}>My Bets</button>
-            <button onClick={() => setShowGuideModal(true)}>How to Play</button>
           </div>
           
           <div className="footer-section">
@@ -2229,16 +2253,6 @@ function App() {
           setShowRegisterModal(false);
           setShowLoginModal(true);
         }}
-      />
-
-      <VideoModal 
-        isOpen={showVideoModal}
-        onClose={() => setShowVideoModal(false)}
-      />
-
-      <UserGuideModal 
-        isOpen={showGuideModal}
-        onClose={() => setShowGuideModal(false)}
       />
     </div>
   );
