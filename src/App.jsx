@@ -1,1181 +1,896 @@
-import React, { useState, useEffect, createContext, useContext } from 'react';
+import React, { useState, useEffect, createContext, useContext, useCallback } from 'react';
+import { createRoot } from 'react-dom/client';
 
-// Create Auth Context
-const AuthContext = createContext();
+// Inline CSS for modern, competitive UI
+const appStyles = `
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap' );
+  @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css' );
 
-// Auth Provider Component
-const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [wallet, setWallet] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  const API_BASE = 'http://localhost:5000/api'; // Will be updated for production
-
-  const register = async (userData) => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${API_BASE}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData)
-      });
-      const data = await response.json();
-      
-      if (data.success) {
-        setUser(data.user);
-        setWallet(data.wallet);
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        return { success: true };
-      }
-      return { success: false, message: data.message };
-    } catch (error) {
-      return { success: false, message: 'Network error' };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const login = async (email, password) => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      const data = await response.json();
-      
-      if (data.success) {
-        setUser(data.user);
-        setWallet(data.wallet);
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        return { success: true };
-      }
-      return { success: false, message: data.message };
-    } catch (error) {
-      return { success: false, message: 'Network error' };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const logout = () => {
-    setUser(null);
-    setWallet(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-  };
-
-  const guestLogin = () => {
-    const guestUser = {
-      id: 'guest_' + Date.now(),
-      name: 'Guest User',
-      email: 'guest@playchacha.net',
-      isGuest: true
-    };
-    const guestWallet = {
-      user_id: guestUser.id,
-      balance: 1000.00,
-      currency: 'USD',
-      transactions: []
-    };
-    
-    setUser(guestUser);
-    setWallet(guestWallet);
-    localStorage.setItem('user', JSON.stringify(guestUser));
-    localStorage.setItem('wallet', JSON.stringify(guestWallet));
-  };
-
-  return (
-    <AuthContext.Provider value={{
-      user, wallet, loading, register, login, logout, guestLogin
-    }}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
-
-// Hook to use auth context
-const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+  :root {
+    --primary-gradient: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    --secondary-gradient: linear-gradient(135deg, #fc6767 0%, #ec008c 100%);
+    --dark-bg: #1a1a2e;
+    --card-bg: rgba(255, 255, 255, 0.08);
+    --text-color: #e0e0e0;
+    --accent-color: #00e676;
+    --border-color: rgba(255, 255, 255, 0.15);
+    --input-bg: rgba(255, 255, 255, 0.1);
+    --button-hover: rgba(255, 255, 255, 0.15);
+    --modal-backdrop: rgba(0, 0, 0, 0.7);
+    --live-red: #ff4d4d;
+    --live-pulse: rgba(255, 77, 77, 0.5);
   }
-  return context;
-};
 
-// Main App Component
-const App = () => {
-  const [currentPage, setCurrentPage] = useState('home');
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showRegisterModal, setShowRegisterModal] = useState(false);
-  const [showInviteModal, setShowInviteModal] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState(null);
-  const [events, setEvents] = useState([]);
-  const [invitations, setInvitations] = useState([]);
-  const [language, setLanguage] = useState('en');
+  body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: var(--dark-bg);
+    color: var(--text-color);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
 
-  const { user, wallet, login, register, logout, guestLogin } = useAuth();
+  #root {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
 
-  // Language translations
-  const translations = {
-    en: {
-      title: 'PlayChaCha.net',
-      home: 'Home',
-      sports: 'Sports',
-      live: 'LIVE',
-      myBets: 'My Bets',
-      login: 'Login',
-      register: 'Register',
-      guestAccess: 'Continue as Guest',
-      heroTitle: 'Peer-to-Peer Sports Betting',
-      heroSubtitle: 'Challenge friends, set your own odds, and win together',
-      startBetting: 'Start Betting Now',
-      watchDemo: 'Watch Demo',
-      liveNow: 'LIVE NOW',
-      inviteFriend: 'Invite Friend to Bet',
-      createInvitation: 'Create Bet Invitation',
-      wallet: 'Wallet',
-      balance: 'Balance'
-    },
-    es: {
-      title: 'PlayChaCha.net',
-      home: 'Inicio',
-      sports: 'Deportes',
-      live: 'EN VIVO',
-      myBets: 'Mis Apuestas',
-      login: 'Iniciar Sesión',
-      register: 'Registrarse',
-      guestAccess: 'Continuar como Invitado',
-      heroTitle: 'Apuestas Deportivas Entre Pares',
-      heroSubtitle: 'Desafía a amigos, establece tus propias cuotas y gana juntos',
-      startBetting: 'Comenzar a Apostar',
-      watchDemo: 'Ver Demo',
-      liveNow: 'EN VIVO AHORA',
-      inviteFriend: 'Invitar Amigo a Apostar',
-      createInvitation: 'Crear Invitación de Apuesta',
-      wallet: 'Billetera',
-      balance: 'Saldo'
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* Header */
+  .header {
+    background: var(--dark-bg);
+    padding: 15px 0;
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  }
+
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .logo {
+    font-size: 28px;
+    font-weight: 800;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-decoration: none;
+    letter-spacing: -1px;
+    cursor: pointer;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 25px;
+  }
+
+  .nav-link {
+    color: var(--text-color);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 16px;
+    transition: color 0.3s ease, transform 0.2s ease;
+    position: relative;
+  }
+
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    background: var(--accent-color);
+    bottom: -5px;
+    left: 0;
+    transition: width 0.3s ease;
+  }
+
+  .nav-link:hover::after,
+  .nav-link.active::after {
+    width: 100%;
+  }
+
+  .nav-link:hover {
+    color: var(--accent-color);
+    transform: translateY(-2px);
+  }
+
+  .user-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .balance-display {
+    background: var(--card-bg);
+    padding: 8px 15px;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .balance-display i {
+    color: var(--accent-color);
+  }
+
+  .auth-button, .action-button {
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+    font-size: 15px;
+    white-space: nowrap;
+  }
+
+  .auth-button:hover, .action-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+  }
+
+  .auth-button.secondary {
+    background: var(--secondary-gradient);
+  }
+
+  .language-selector {
+    background: var(--input-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 8px 12px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 14px;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%23e0e0e0" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>' );
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 30px;
+  }
+
+  .language-selector option {
+    background-color: var(--dark-bg);
+    color: var(--text-color);
+  }
+
+  /* Hero Section */
+  .hero-section {
+    position: relative;
+    height: 600px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); /* Dark, subtle gradient */
+  }
+
+  .hero-background-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6); /* Dark overlay for text readability */
+    z-index: 1;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 800px;
+    padding: 20px;
+  }
+
+  .hero-title {
+    font-size: 56px;
+    font-weight: 800;
+    margin-bottom: 20px;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.1;
+  }
+
+  .hero-subtitle {
+    font-size: 22px;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 30px;
+  }
+
+  .hero-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 40px;
+  }
+
+  .stat-item {
+    background: var(--card-bg);
+    padding: 15px 25px;
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-color);
+  }
+
+  .stat-number {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--accent-color);
+    margin-bottom: 5px;
+  }
+
+  .stat-label {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  /* Live Now Section */
+  .live-now-section {
+    padding: 60px 0;
+    background: var(--dark-bg);
+  }
+
+  .section-title {
+    font-size: 36px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 40px;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .live-events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+  }
+
+  .event-card {
+    background: var(--card-bg);
+    border-radius: 15px;
+    padding: 25px;
+    border: 1px solid var(--border-color);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .event-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  }
+
+  .event-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+
+  .event-sport {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent-color);
+    text-transform: uppercase;
+  }
+
+  .live-badge {
+    background: var(--live-red);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 var(--live-pulse); }
+    70% { box-shadow: 0 0 0 10px rgba(255, 77, 77, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0); }
+  }
+
+  .teams {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .team-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+  }
+
+  .score {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--accent-color);
+  }
+
+  .odds-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .odd-button {
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 12px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+
+  .odd-button:hover {
+    background: var(--button-hover);
+    transform: translateY(-2px);
+  }
+
+  .odd-value {
+    color: var(--accent-color);
+    font-size: 18px;
+    font-weight: 700;
+    margin-top: 5px;
+  }
+
+  /* How-To Guide */
+  .how-to-section {
+    padding: 60px 0;
+    background: linear-gradient(135deg, #24243e, #302b63);
+  }
+
+  .how-to-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+  }
+
+  .step-card {
+    background: var(--card-bg);
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .step-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  }
+
+  .step-icon {
+    font-size: 48px;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 20px;
+  }
+
+  .step-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: white;
+  }
+
+  .step-description {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  /* Payment Gateways */
+  .payment-section {
+    padding: 60px 0;
+    background: var(--dark-bg);
+  }
+
+  .payment-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px;
+    justify-items: center;
+  }
+
+  .payment-logo {
+    background: var(--card-bg);
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 80px;
+    width: 100%;
+    max-width: 150px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .payment-logo:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  }
+
+  .payment-logo img {
+    max-width: 100%;
+    max-height: 100%;
+    filter: grayscale(100%) brightness(150%);
+    transition: filter 0.3s ease;
+  }
+
+  .payment-logo:hover img {
+    filter: grayscale(0%) brightness(100%);
+  }
+
+  /* Social Media */
+  .social-section {
+    padding: 60px 0;
+    background: linear-gradient(135deg, #24243e, #302b63);
+    text-align: center;
+  }
+
+  .social-links {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    margin-top: 30px;
+  }
+
+  .social-icon {
+    font-size: 36px;
+    color: var(--text-color);
+    transition: color 0.3s ease, transform 0.2s ease;
+  }
+
+  .social-icon:hover {
+    transform: translateY(-3px);
+  }
+
+  .social-icon.fa-twitter:hover { color: #1DA1F2; }
+  .social-icon.fa-instagram:hover { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .social-icon.fa-facebook-f:hover { color: #1877F2; }
+  .social-icon.fa-youtube:hover { color: #FF0000; }
+  .social-icon.fa-tiktok:hover { color: #69C9D0; }
+
+  /* Footer */
+  .footer {
+    background: var(--dark-bg);
+    padding: 40px 0;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    margin-top: auto;
+  }
+
+  .footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    margin-bottom: 20px;
+  }
+
+  .footer-link {
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 15px;
+    transition: color 0.3s ease;
+  }
+
+  .footer-link:hover {
+    color: var(--accent-color);
+  }
+
+  .copyright {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  /* Modals */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--modal-backdrop);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    backdrop-filter: blur(5px);
+  }
+
+  .modal-content {
+    background: var(--dark-bg);
+    padding: 30px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    position: relative;
+    border: 1px solid var(--border-color);
+  }
+
+  .modal-close-button {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: var(--text-color);
+    font-size: 24px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+  }
+
+  .modal-close-button:hover {
+    color: var(--accent-color);
+  }
+
+  .modal-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 25px;
+    text-align: center;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--text-color);
+  }
+
+  .form-group input {
+    width: calc(100% - 20px);
+    padding: 12px 10px;
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-color);
+    font-size: 16px;
+  }
+
+  .form-group input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(0, 230, 118, 0.3);
+  }
+
+  .form-error {
+    color: var(--live-red);
+    font-size: 14px;
+    margin-top: 5px;
+  }
+
+  .modal-button {
+    width: 100%;
+    padding: 15px;
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+  }
+
+  .modal-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+  }
+
+  .modal-text-link {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 15px;
+  }
+
+  .modal-text-link span {
+    color: var(--accent-color);
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .google-auth-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px;
+    background: #4285F4;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-top: 20px;
+  }
+
+  .google-auth-button:hover {
+    background: #357ae8;
+  }
+
+  .google-auth-button i {
+    font-size: 20px;
+  }
+
+  .guest-login-button {
+    background: var(--card-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    margin-top: 15px;
+  }
+
+  .guest-login-button:hover {
+    background: var(--button-hover);
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .header-content {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
     }
-  };
-
-  const t = translations[language] || translations.en;
-
-  // Load events on component mount
-  useEffect(() => {
-    loadEvents();
-    if (user && !user.isGuest) {
-      loadInvitations();
+    .nav-links {
+      width: 100%;
+      justify-content: center;
+      margin-top: 10px;
+      gap: 15px;
     }
-  }, [user]);
-
-  const loadEvents = async () => {
-    try {
-      const response = await fetch('http://localhost:5000/api/events');
-      const data = await response.json();
-      setEvents(data.events || []);
-    } catch (error) {
-      // Fallback to mock data
-      setEvents([
-        {
-          id: 'nfl_001',
-          sport: 'NFL',
-          home_team: 'Kansas City Chiefs',
-          away_team: 'Buffalo Bills',
-          start_time: '2025-01-15T20:00:00Z',
-          status: 'upcoming',
-          home_score: 0,
-          away_score: 0
-        },
-        {
-          id: 'nba_001',
-          sport: 'NBA',
-          home_team: 'Los Angeles Lakers',
-          away_team: 'Boston Celtics',
-          start_time: '2025-01-15T22:00:00Z',
-          status: 'live',
-          home_score: 78,
-          away_score: 82
-        }
-      ]);
+    .user-controls {
+      width: 100%;
+      justify-content: center;
+      margin-top: 10px;
     }
-  };
-
-  const loadInvitations = async () => {
-    if (!user || user.isGuest) return;
-    
-    try {
-      const response = await fetch(`http://localhost:5000/api/invitations/user/${user.id}`);
-      const data = await response.json();
-      setInvitations(data.invitations || []);
-    } catch (error) {
-      console.error('Failed to load invitations:', error);
+    .hero-title {
+      font-size: 40px;
     }
-  };
+    .hero-subtitle {
+      font-size: 18px;
+    }
+    .hero-buttons {
+      flex-direction: column;
+      gap: 15px;
+    }
+    .hero-stats {
+      flex-direction: column;
+      gap: 20px;
+    }
+    .section-title {
+      font-size: 30px;
+    }
+    .live-events-grid, .how-to-steps, .payment-grid {
+      grid-template-columns: 1fr;
+    }
+    .odd-button {
+      padding: 10px 8px;
+      font-size: 14px;
+    }
+    .odd-value {
+      font-size: 16px;
+    }
+  }
 
-  // Inject CSS styles
-  useEffect(() => {
-    const style = document.createElement('style');
-    style.textContent = `
-      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-      @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
+  @media (max-width: 480px) {
+    .logo {
+      font-size: 24px;
+    }
+    .nav-link {
+      font-size: 14px;
+    }
+    .auth-button, .action-button {
+      padding: 8px 15px;
+      font-size: 14px;
+    }
+    .balance-display {
+      font-size: 13px;
+      padding: 6px 12px;
+    }
+    .language-selector {
+      padding: 6px 10px;
+      font-size: 13px;
+    }
+    .hero-title {
+      font-size: 32px;
+    }
+    .hero-subtitle {
+      font-size: 16px;
+    }
+    .stat-number {
+      font-size: 28px;
+    }
+    .stat-label {
+      font-size: 14px;
+    }
+    .event-card {
+      padding: 20px;
+    }
+    .team-name {
+      font-size: 18px;
+    }
+    .score {
+      font-size: 20px;
+    }
+    .modal-content {
+      padding: 20px;
+    }
+    .modal-title {
+      font-size: 24px;
+    }
+    .form-group input {
+      padding: 10px;
+      font-size: 14px;
+    }
+    .modal-button {
+      padding: 12px;
+      font-size: 16px;
+    }
+  }
+`;
 
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
+// Inject styles into the document head
+const styleSheet = document.createElement("style");
+styleSheet.type = "text/css";
+styleSheet.innerText = appStyles;
+document.head.appendChild(styleSheet);
 
-      body {
-        font-family: 'Inter', sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        color: #333;
-      }
+// Context for Authentication
+const AuthContext = createContext(null);
 
-      .app-container {
-        min-height: 100vh;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      }
+const API_BASE = 'https://playchacha-backend-p2p.onrender.com/api'; // Updated to P2P backend
 
-      .header {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        padding: 1rem 2rem;
-        position: sticky;
-        top: 0;
-        z-index: 100;
-      }
+export const AuthProvider = ({ children } ) => {
+    const [user, setUser] = useState(null);
+    const [token, setToken] = useState(localStorage.getItem('token'));
+    const [balance, setBalance] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const [authError, setAuthError] = useState(null);
 
-      .header-content {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        max-width: 1200px;
-        margin: 0 auto;
-      }
-
-      .logo {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: white;
-        text-decoration: none;
-      }
-
-      .nav {
-        display: flex;
-        gap: 2rem;
-        align-items: center;
-      }
-
-      .nav-button {
-        background: none;
-        border: none;
-        color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 25px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-weight: 500;
-      }
-
-      .nav-button:hover, .nav-button.active {
-        background: rgba(255, 255, 255, 0.2);
-        transform: translateY(-2px);
-      }
-
-      .auth-buttons {
-        display: flex;
-        gap: 1rem;
-        align-items: center;
-      }
-
-      .btn {
-        padding: 0.75rem 1.5rem;
-        border: none;
-        border-radius: 25px;
-        cursor: pointer;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        display: inline-block;
-        text-align: center;
-      }
-
-      .btn-primary {
-        background: linear-gradient(45deg, #ff6b6b, #ee5a24);
-        color: white;
-      }
-
-      .btn-secondary {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-      }
-
-      .btn-guest {
-        background: linear-gradient(45deg, #00d2d3, #54a0ff);
-        color: white;
-        margin-left: 0.5rem;
-      }
-
-      .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-      }
-
-      .hero {
-        text-align: center;
-        padding: 4rem 2rem;
-        color: white;
-      }
-
-      .hero h1 {
-        font-size: 3.5rem;
-        font-weight: 700;
-        margin-bottom: 1rem;
-        background: linear-gradient(45deg, #fff, #f1c40f);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-      }
-
-      .hero p {
-        font-size: 1.25rem;
-        margin-bottom: 2rem;
-        opacity: 0.9;
-      }
-
-      .hero-buttons {
-        display: flex;
-        gap: 1rem;
-        justify-content: center;
-        flex-wrap: wrap;
-      }
-
-      .live-banner {
-        background: linear-gradient(45deg, #ff4757, #ff3838);
-        color: white;
-        padding: 0.5rem;
-        text-align: center;
-        font-weight: 600;
-        animation: pulse 2s infinite;
-      }
-
-      @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.8; }
-      }
-
-      .content {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 2rem;
-      }
-
-      .events-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-        gap: 1.5rem;
-        margin-top: 2rem;
-      }
-
-      .event-card {
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 15px;
-        padding: 1.5rem;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .event-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-      }
-
-      .event-card.live::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(45deg, #ff4757, #ff3838);
-        animation: pulse 2s infinite;
-      }
-
-      .live-badge {
-        background: #ff4757;
-        color: white;
-        padding: 0.25rem 0.75rem;
-        border-radius: 15px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-        animation: pulse 2s infinite;
-      }
-
-      .teams {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin: 1rem 0;
-      }
-
-      .team {
-        text-align: center;
-        flex: 1;
-      }
-
-      .team-name {
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-      }
-
-      .score {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #667eea;
-      }
-
-      .vs {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: #666;
-        margin: 0 1rem;
-      }
-
-      .invite-button {
-        width: 100%;
-        margin-top: 1rem;
-        background: linear-gradient(45deg, #667eea, #764ba2);
-        color: white;
-      }
-
-      .modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.8);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-      }
-
-      .modal-content {
-        background: white;
-        border-radius: 15px;
-        padding: 2rem;
-        max-width: 400px;
-        width: 90%;
-        max-height: 90vh;
-        overflow-y: auto;
-      }
-
-      .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1.5rem;
-      }
-
-      .close-button {
-        background: none;
-        border: none;
-        font-size: 1.5rem;
-        cursor: pointer;
-        color: #666;
-      }
-
-      .form-group {
-        margin-bottom: 1rem;
-      }
-
-      .form-group label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-weight: 600;
-        color: #333;
-      }
-
-      .form-group input, .form-group select {
-        width: 100%;
-        padding: 0.75rem;
-        border: 2px solid #e1e8ed;
-        border-radius: 8px;
-        font-size: 1rem;
-        transition: border-color 0.3s ease;
-      }
-
-      .form-group input:focus, .form-group select:focus {
-        outline: none;
-        border-color: #667eea;
-      }
-
-      .wallet-info {
-        background: linear-gradient(45deg, #667eea, #764ba2);
-        color: white;
-        padding: 1rem;
-        border-radius: 10px;
-        margin-bottom: 1rem;
-        text-align: center;
-      }
-
-      .invitations-section {
-        margin-top: 2rem;
-      }
-
-      .invitation-card {
-        background: white;
-        border-radius: 10px;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        border-left: 4px solid #667eea;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      }
-
-      .invitation-actions {
-        display: flex;
-        gap: 0.5rem;
-        margin-top: 1rem;
-      }
-
-      .btn-small {
-        padding: 0.5rem 1rem;
-        font-size: 0.875rem;
-      }
-
-      .btn-accept {
-        background: #2ed573;
-        color: white;
-      }
-
-      .btn-decline {
-        background: #ff4757;
-        color: white;
-      }
-
-      .btn-counter {
-        background: #ffa502;
-        color: white;
-      }
-
-      .language-selector {
-        margin-left: 1rem;
-      }
-
-      .language-selector select {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: 5px;
-        padding: 0.5rem;
-      }
-
-      .user-info {
-        color: white;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-      }
-
-      .adsense-banner {
-        background: #f8f9fa;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        padding: 1rem;
-        text-align: center;
-        margin: 2rem 0;
-        color: #6c757d;
-      }
-
-      @media (max-width: 768px) {
-        .header-content {
-          flex-direction: column;
-          gap: 1rem;
+    const fetchUserProfile = useCallback(async (authToken) => {
+        if (!authToken) {
+            setUser(null);
+            setBalance(0);
+            setLoading(false);
+            return;
         }
-
-        .nav {
-          gap: 1rem;
+        try {
+            const response = await fetch(`${API_BASE}/user/profile`, {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setUser(data.user);
+                setBalance(data.user.balance);
+            } else {
+                const errorData = await response.json();
+                console.error('Failed to fetch user profile:', errorData.message);
+                logout(); // Logout if token is invalid
+            }
+        } catch (error) {
+            console.error('Network error fetching user profile:', error);
+            logout();
+        } finally {
+            setLoading(false);
         }
+    }, []);
 
-        .hero h1 {
-          font-size: 2.5rem;
+    useEffect(() => {
+        if (token) {
+            fetchUserProfile(token);
+        } else {
+            setLoading(false);
         }
+    }, [token, fetchUserProfile]);
 
-        .hero-buttons {
-          flex-direction: column;
-          align-items: center;
+    const login = async (email, password) => {
+        setAuthError(null);
+        try {
+            const response = await fetch(`${API_BASE}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                localStorage.setItem('token', data.token);
+                setToken(data.token);
+                await fetchUserProfile(data.token);
+                return { success: true };
+            } else {
+                setAuthError(data.message || 'Login failed');
+                return { success: false, message: data.message };
+            }
+        } catch (error) {
+            setAuthError('Network error. Please try again.');
+            return { success: false, message: 'Network error.' };
         }
-
-        .events-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .teams {
-          flex-direction: column;
-          gap: 1rem;
-        }
-
-        .vs {
-          margin: 0.5rem 0;
-        }
-      }
-    `;
-    document.head.appendChild(style);
-
-    // Add AdSense script
-    const adsenseScript = document.createElement('script');
-    adsenseScript.async = true;
-    adsenseScript.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6074565478510564';
-    adsenseScript.crossOrigin = 'anonymous';
-    document.head.appendChild(adsenseScript);
-
-    return () => {
-      document.head.removeChild(style);
-      if (document.head.contains(adsenseScript)) {
-        document.head.removeChild(adsenseScript);
-      }
     };
-  }, []);
 
-  const handleInviteFriend = (event) => {
-    setSelectedEvent(event);
-    setShowInviteModal(true);
-  };
+    const register = async (username, email, password) => {
+        setAuthError(null);
+        try {
+            const response = await fetch(`${API_BASE}/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, email, password })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                localStorage.setItem('token', data.token);
+                setToken(data.token);
+                await fetchUserProfile(data.token);
+                return { success: true };
+            } else {
+                setAuthError(data.message || 'Registration failed');
+                return { success: false, message: data.message };
+            }
+        } catch (error) {
+            setAuthError('Network error. Please try again.');
+            return { success: false, message: 'Network error.' };
+        }
+    };
 
-  const liveEvents = events.filter(event => event.status === 'live');
-
-  return (
-    <div className="app-container">
-      {/* Live Banner */}
-      {liveEvents.length > 0 && (
-        <div className="live-banner">
-          <i className="fas fa-circle" style={{color: '#ff4757', marginRight: '0.5rem'}}></i>
-          {t.liveNow}: {liveEvents.length} live matches happening now!
-        </div>
-      )}
-
-      {/* Header */}
-      <header className="header">
-        <div className="header-content">
-          <a href="#" className="logo" onClick={() => setCurrentPage('home')}>
-            {t.title}
-          </a>
-          
-          <nav className="nav">
-            <button 
-              className={`nav-button ${currentPage === 'home' ? 'active' : ''}`}
-              onClick={() => setCurrentPage('home')}
-            >
-              {t.home}
-            </button>
-            <button 
-              className={`nav-button ${currentPage === 'sports' ? 'active' : ''}`}
-              onClick={() => setCurrentPage('sports')}
-            >
-              {t.sports}
-            </button>
-            <button 
-              className={`nav-button ${currentPage === 'live' ? 'active' : ''}`}
-              onClick={() => setCurrentPage('live')}
-            >
-              {t.live}
-            </button>
-            {user && (
-              <button 
-                className={`nav-button ${currentPage === 'mybets' ? 'active' : ''}`}
-                onClick={() => setCurrentPage('mybets')}
-              >
-                {t.myBets}
-              </button>
-            )}
-          </nav>
-
-          <div className="auth-buttons">
-            <div className="language-selector">
-              <select value={language} onChange={(e) => setLanguage(e.target.value)}>
-                <option value="en">🇺🇸 EN</option>
-                <option value="es">🇪🇸 ES</option>
-                <option value="pt">🇧🇷 PT</option>
-                <option value="fr">🇫🇷 FR</option>
-                <option value="de">🇩🇪 DE</option>
-                <option value="zh">🇨🇳 ZH</option>
-                <option value="sw">🇰🇪 SW</option>
-              </select>
-            </div>
-            
-            {user ? (
-              <div className="user-info">
-                <span>Welcome, {user.name}!</span>
-                {wallet && (
-                  <span className="wallet-info">
-                    {t.balance}: ${wallet.balance.toFixed(2)}
-                  </span>
-                )}
-                <button className="btn btn-secondary" onClick={logout}>
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <>
-                <button className="btn btn-secondary" onClick={() => setShowLoginModal(true)}>
-                  {t.login}
-                </button>
-                <button className="btn btn-primary" onClick={() => setShowRegisterModal(true)}>
-                  {t.register}
-                </button>
-                <button className="btn btn-guest" onClick={guestLogin}>
-                  {t.guestAccess}
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main>
-        {currentPage === 'home' && (
-          <>
-            {/* Hero Section */}
-            <section className="hero">
-              <h1>{t.heroTitle}</h1>
-              <p>{t.heroSubtitle}</p>
-              <div className="hero-buttons">
-                <button className="btn btn-primary" onClick={() => setCurrentPage('sports')}>
-                  {t.startBetting}
-                </button>
-                <button className="btn btn-secondary">
-                  {t.watchDemo}
-                </button>
-              </div>
-            </section>
-
-            {/* AdSense Banner */}
-            <div className="adsense-banner">
-              <div>Advertisement</div>
-              <div style={{fontSize: '0.875rem', marginTop: '0.5rem'}}>
-                AdSense integration active - ads will appear here
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Events Content */}
-        <div className="content">
-          {(currentPage === 'sports' || currentPage === 'live' || currentPage === 'home') && (
-            <div className="events-grid">
-              {events
-                .filter(event => currentPage === 'live' ? event.status === 'live' : true)
-                .map(event => (
-                  <div key={event.id} className={`event-card ${event.status === 'live' ? 'live' : ''}`}>
-                    {event.status === 'live' && <div className="live-badge">LIVE</div>}
-                    
-                    <div style={{fontSize: '0.875rem', color: '#666', marginBottom: '0.5rem'}}>
-                      {event.sport}
-                    </div>
-                    
-                    <div className="teams">
-                      <div className="team">
-                        <div className="team-name">{event.home_team}</div>
-                        <div className="score">{event.home_score}</div>
-                      </div>
-                      <div className="vs">VS</div>
-                      <div className="team">
-                        <div className="team-name">{event.away_team}</div>
-                        <div className="score">{event.away_score}</div>
-                      </div>
-                    </div>
-                    
-                    <button 
-                      className="btn invite-button"
-                      onClick={() => handleInviteFriend(event)}
-                    >
-                      {t.inviteFriend}
-                    </button>
-                  </div>
-                ))}
-            </div>
-          )}
-
-          {/* My Bets Page */}
-          {currentPage === 'mybets' && user && (
-            <div>
-              <h2 style={{color: 'white', marginBottom: '2rem'}}>My Invitations & Bets</h2>
-              
-              {invitations.length > 0 ? (
-                <div className="invitations-section">
-                  {invitations.map(invitation => (
-                    <div key={invitation.id} className="invitation-card">
-                      <h4>Bet Invitation</h4>
-                      <p><strong>Event:</strong> {invitation.event_id}</p>
-                      <p><strong>Wager:</strong> ${invitation.wager_amount}</p>
-                      <p><strong>Status:</strong> {invitation.status}</p>
-                      <p><strong>Expires:</strong> {new Date(invitation.expires_at).toLocaleString()}</p>
-                      
-                      {invitation.status === 'pending' && (
-                        <div className="invitation-actions">
-                          <button className="btn btn-accept btn-small">Accept</button>
-                          <button className="btn btn-decline btn-small">Decline</button>
-                          <button className="btn btn-counter btn-small">Counter</button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div style={{color: 'white', textAlign: 'center', padding: '2rem'}}>
-                  <p>No invitations yet. Start by inviting friends to bet!</p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </main>
-
-      {/* Login Modal */}
-      {showLoginModal && (
-        <div className="modal">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h3>Login to PlayChaCha</h3>
-              <button className="close-button" onClick={() => setShowLoginModal(false)}>×</button>
-            </div>
-            <LoginForm onSuccess={() => setShowLoginModal(false)} />
-          </div>
-        </div>
-      )}
-
-      {/* Register Modal */}
-      {showRegisterModal && (
-        <div className="modal">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h3>Join PlayChaCha</h3>
-              <button className="close-button" onClick={() => setShowRegisterModal(false)}>×</button>
-            </div>
-            <RegisterForm onSuccess={() => setShowRegisterModal(false)} />
-          </div>
-        </div>
-      )}
-
-      {/* Invite Modal */}
-      {showInviteModal && selectedEvent && (
-        <div className="modal">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h3>{t.createInvitation}</h3>
-              <button className="close-button" onClick={() => setShowInviteModal(false)}>×</button>
-            </div>
-            <InviteForm 
-              event={selectedEvent} 
-              onSuccess={() => {
-                setShowInviteModal(false);
-                loadInvitations();
-              }} 
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Footer */}
-      <footer style={{background: 'rgba(0,0,0,0.2)', color: 'white', textAlign: 'center', padding: '2rem', marginTop: '4rem'}}>
-        <div style={{marginBottom: '1rem'}}>
-          <a href="#" style={{color: 'white', margin: '0 1rem'}}><i className="fab fa-twitter"></i></a>
-          <a href="#" style={{color: 'white', margin: '0 1rem'}}><i className="fab fa-instagram"></i></a>
-          <a href="#" style={{color: 'white', margin: '0 1rem'}}><i className="fab fa-facebook"></i></a>
-          <a href="#" style={{color: 'white', margin: '0 1rem'}}><i className="fab fa-youtube"></i></a>
-        </div>
-        <p>© 2025 PlayChaCha.net - Powered by <a href="https://visnec.com" style={{color: '#f1c40f'}}>Visnec</a></p>
-      </footer>
-    </div>
-  );
-};
-
-// Login Form Component
-const LoginForm = ({ onSuccess }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const { login, loading } = useAuth();
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    
-    const result = await login(email, password);
-    if (result.success) {
-      onSuccess();
-    } else {
-      setError(result.message);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
-      {error && <div style={{color: '#ff4757', marginBottom: '1rem'}}>{error}</div>}
-      
-      <div className="form-group">
-        <label>Email</label>
-        <input 
-          type="email" 
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required 
-        />
-      </div>
-      
-      <div className="form-group">
-        <label>Password</label>
-        <input 
-          type="password" 
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required 
-        />
-      </div>
-      
-      <button type="submit" className="btn btn-primary" style={{width: '100%'}} disabled={loading}>
-        {loading ? 'Logging in...' : 'Login'}
-      </button>
-      
-      <div style={{textAlign: 'center', margin: '1rem 0', color: '#666'}}>or</div>
-      
-      <button type="button" className="btn btn-secondary" style={{width: '100%'}}>
-        <i className="fab fa-google" style={{marginRight: '0.5rem'}}></i>
-        Sign in with Google
-      </button>
-    </form>
-  );
-};
-
-// Register Form Component
-const RegisterForm = ({ onSuccess }) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-  });
-  const [error, setError] = useState('');
-  const { register, loading } = useAuth();
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-    
-    const result = await register(formData);
-    if (result.success) {
-      onSuccess();
-    } else {
-      setError(result.message);
-    }
-  };
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
-      {error && <div style={{color: '#ff4757', marginBottom: '1rem'}}>{error}</div>}
-      
-      <div className="form-group">
-        <label>Full Name</label>
-        <input 
-          type="text" 
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          required 
-        />
-      </div>
-      
-      <div className="form-group">
-        <label>Email</label>
-        <input 
-          type="email" 
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          required 
-        />
-      </div>
-      
-      <div className="form-group">
-        <label>Password</label>
-        <input 
-          type="password" 
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
-          required 
-        />
-      </div>
-      
-      <div className="form-group">
-        <label>Confirm Password</label>
-        <input 
-          type="password" 
-          name="confirmPassword"
-          value={formData.confirmPassword}
-          onChange={handleChange}
-          required 
-        />
-      </div>
-      
-      <button type="submit" className="btn btn-primary" style={{width: '100%'}} disabled={loading}>
-        {loading ? 'Creating Account...' : 'Create Account'}
-      </button>
-      
-      <div style={{textAlign: 'center', margin: '1rem 0', color: '#666'}}>or</div>
-      
-      <button type="button" className="btn btn-secondary" style={{width: '100%'}}>
-        <i className="fab fa-google" style={{marginRight: '0.5rem'}}></i>
-        Sign up with Google
-      </button>
-    </form>
-  );
-};
-
-// Invite Form Component
-const InviteForm = ({ event, onSuccess }) => {
-  const [formData, setFormData] = useState({
-    invitee_email: '',
-    bet_type: 'home_win',
-    wager_amount: 10,
-    odds: '2.0'
-  });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { user } = useAuth();
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-    
-    try {
-      const response = await fetch('http://localhost:5000/api/invitations/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          event_id: event.id,
-          inviter_id: user.id
-        })
-      });
-      
-      const data = await response.json();
-      if (data.success) {
-        onSuccess();
-      } else {
-        setError(data.message || 'Failed to create invitation');
-      }
-    } catch (error) {
-      setError('Network error. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <div style={{marginBottom: '1rem', padding: '1rem', background: '#f8f9fa', borderRadius: '8px'}}>
-        <strong>{event.home_team} vs {event.away_team}</strong>
-        <div style={{fontSize: '0.875rem', color: '#666'}}>{event.sport}</div>
-      </div>
-      
-      {error && <div style={{color: '#ff4757', marginBottom: '1rem'}}>{error}</div>}
-      
-      <div className="form-group">
-        <label>Friend's Email</label>
-        <input 
-          type="email" 
-          name="invitee_email"
-          value={formData.invitee_email}
-          onChange={handleChange}
-          placeholder="Enter your friend's email"
-          required 
-        />
-      </div>
-      
-      <div className="form-group">
-        <label>Bet Type</label>
-        <select name="bet_type" value={formData.bet_type} onChange={handleChange}>
-          <option value="home_win">{event.home_team} to Win</option>
-          <option value="away_win">{event.away_team} to Win</option>
-          <option value="over">Over Total Points</option>
-          <option value="under">Under Total Points</option>
-        </select>
-      </div>
-      
-      <div className="form-group">
-        <label>Wager Amount ($)</label>
-        <input 
-          type="number" 
-          name="wager_amount"
-          value={formData.wager_amount}
-          onChange={handleChange}
-          min="1"
-          max="1000"
-          required 
-        />
-      </div>
-      
-      <div className="form-group">
-        <label>Odds</label>
-        <input 
-          type="text" 
-          name="odds"
-          value={formData.odds}
-          onChange={handleChange}
-          placeholder="e.g., 2.0, 1.5, 3.0"
-          required 
-        />
-      </div>
-      
-      <button type="submit" className="btn btn-primary" style={{width: '100%'}} disabled={loading}>
-        {loading ? 'Creating Invitation...' : 'Send Invitation'}
-      </button>
-    </form>
-  );
-};
-
-// Main App with Auth Provider
-const AppWithAuth = () => {
-  return (
-    <AuthProvider>
-      <App />
-    </AuthProvider>
-  );
-};
-
-export default AppWithAuth;
-
+    const loginAsGuest = async () => {
+        setAuthError(null);
+        try {
+            const response = await fetch(`${API_BASE}/auth/guest_login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await response.json();
+            if (response.ok) {
+                localStorage.setItem('token', data.token);
+                setToken(data.token);
+                await fetchUserProfile(data.token);
+                return { success: true };
+            } else {
+                setAuthError(data.message
